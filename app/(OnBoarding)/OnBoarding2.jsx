@@ -39,7 +39,7 @@ const OnBoarding2 = () => {
          <Image
            source={require('../../assets/images/Illustration-1.png')}
            style={{ width: 300, height: 300 }}
-           resizeMode="contain"
+           contentFit="contain"
          />
        </View>
        <TouchableOpacity
