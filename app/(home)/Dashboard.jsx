@@ -1,11 +1,15 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
+import { useRouter } from 'expo-router'
 import { useRef, useState } from 'react'
-import { Animated, Dimensions, Pressable, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { Animated, Dimensions, Pressable, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { useTheme } from '../../context/useTheme'
 
 const { width, height } = Dimensions.get('window')
 
 const Dashboard = () => {
+  const router = useRouter();
+  const { theme } = useTheme();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const slideAnim = useRef(new Animated.Value(-width * 0.8)).current
   const overlayAnim = useRef(new Animated.Value(0)).current
@@ -32,19 +36,19 @@ const Dashboard = () => {
 
   const menuItems = [
     {
-      icon:'book-outline', label:'Gradebook', color:'#000'
+      icon:'book-outline', label:'Gradebook', color:'#000', route:'/(OnBoarding)/DrawerScreens/gradebook'
     },
     {
-      icon:'calendar-outline', label:'Attendance', color:'#000'
+      icon:'calendar-outline', label:'Attendance', color:'#000', route:'/(OnBoarding)/DrawerScreens/attendance'
     },
     {
-      icon:'chatbubble-ellipses-outline', label:'Feedback', color:'#000'
+      icon:'chatbubble-ellipses-outline', label:'Feedback', color:'#000', route:'/(OnBoarding)/DrawerScreens/feedback'
     },
     {
-      icon:'document-text-outline', label:'Invoices', color:'#000'
+      icon:'document-text-outline', label:'Invoices', color:'#000', route:'/(OnBoarding)/DrawerScreens/invoices'
     },
     {
-      icon:'settings-outline', label:'Settings', color:'#000'
+      icon:'settings-outline', label:'Settings', color:'#000', route:'/(OnBoarding)/DrawerScreens/settings'
     }
   ]
   const subjects = [
@@ -71,67 +75,146 @@ const Dashboard = () => {
   return (
     <View className="flex-1">
       {/* Header */}
-      <View className="bg-[#86C3E5] shadow-md" style={{ paddingTop: StatusBar.currentHeight }}>
+      <View className="shadow-md" style={{ backgroundColor: theme.primary, paddingTop: StatusBar.currentHeight }}>
         <View className="flex-row items-center h-20 px-4">
           <TouchableOpacity 
             onPress={toggleDrawer} 
-            className="mr-4 p-2 rounded-lg bg-white/20"
+            className="mr-4 p-2 rounded-lg"
+            style={{ backgroundColor: theme.textInverse + '20' }}
             activeOpacity={0.7}
           >
-            <Image
-            source={require('../../assets/images/Icon.png')}
-            style={{ width: 24, height: 24 }}
+            <Ionicons 
+              name="menu-outline" 
+              size={24} 
+              color={theme.textInverse}
             />
           </TouchableOpacity>
-          <Text className="text-black font-semibold text-xl flex-1" numberOfLines={1}>Dashboard</Text>
+          <Text className="font-semibold text-xl flex-1" style={{ color: theme.textInverse }} numberOfLines={1}>Dashboard</Text>
         </View>
       </View>
 
       {/* Content */}
-      <View className="flex-1 bg-[#CEEDFF] p-6">
-        
+      <ScrollView 
+        className="flex-1" 
+        style={{ backgroundColor: theme.background }}
+        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Subject Cards */}
         <View className="gap-4 mb-8">
           {subjects.map((subject, index) => (
             <View 
               key={index}
-              className="bg-white p-4 rounded-xl shadow-sm flex-row items-center"
+              className="p-5 rounded-2xl flex-row items-center"
+              style={{ 
+                backgroundColor: theme.surface,
+                borderWidth: 1,
+                borderColor: theme.border,
+                shadowColor: theme.shadow,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 4
+              }}
             >
               <View 
-                className="w-14 h-14 rounded-full items-center justify-center mr-4"
-                style={{ backgroundColor: `${subject.color}20` }}
+                className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
+                style={{ 
+                  backgroundColor: theme.primary + '15',
+                  borderWidth: 2,
+                  borderColor: theme.primary + '30'
+                }}
               >
-                <Ionicons name={subject.icon} size={28} color={subject.color} />
+                <Ionicons name={subject.icon} size={32} color={theme.primary} />
               </View>
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-gray-800">{subject.name}</Text>
-                <Text className="text-gray-600 text-sm">{subject.time}</Text>
+                <Text className="text-xl font-bold mb-1" style={{ color: theme.text }}>{subject.name}</Text>
+                <Text className="text-sm" style={{ color: theme.textSecondary }}>{subject.time}</Text>
               </View>
             </View>
           ))}
         </View>
         
         {/* Quick Stats */}
-        <View className="flex-row justify-between gap-4">
-          <View className="bg-white p-4 rounded-xl shadow-sm flex-1 ml-2 items-center">
-            <Ionicons name="ribbon-outline" size={32} color="#000" />
-            <Text className="text-gray-600 mt-2">Grades</Text>
-            <Text className="text-2xl font-bold text-gray-800">92%</Text>
+        <View className="gap-4">
+          <View className="flex-row gap-4">
+            <TouchableOpacity 
+              className="p-6 rounded-2xl flex-1 items-center"
+              style={{ 
+                backgroundColor: theme.surface,
+                borderWidth: 1,
+                borderColor: theme.border,
+                shadowColor: theme.shadow,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 4
+              }}
+              activeOpacity={0.8}
+            >
+              <View 
+                className="w-14 h-14 rounded-2xl items-center justify-center mb-3"
+                style={{ backgroundColor: theme.success + '15', borderWidth: 2, borderColor: theme.success + '30' }}
+              >
+                <Ionicons name="ribbon" size={28} color={theme.success} />
+              </View>
+              <Text className="text-sm font-medium mb-1" style={{ color: theme.textSecondary }}>Grades</Text>
+              <Text className="text-3xl font-bold" style={{ color: theme.success }}>92%</Text>
+              <Text className="text-xs mt-1" style={{ color: theme.textTertiary }}>Excellent</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              className="p-6 rounded-2xl flex-1 items-center"
+              style={{ 
+                backgroundColor: theme.surface,
+                borderWidth: 1,
+                borderColor: theme.border,
+                shadowColor: theme.shadow,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 4
+              }}
+              activeOpacity={0.8}
+            >
+              <View 
+                className="w-14 h-14 rounded-2xl items-center justify-center mb-3"
+                style={{ backgroundColor: theme.primary + '15', borderWidth: 2, borderColor: theme.primary + '30' }}
+              >
+                <Ionicons name="checkmark-done" size={28} color={theme.primary} />
+              </View>
+              <Text className="text-sm font-medium mb-1" style={{ color: theme.textSecondary }}>Attendance</Text>
+              <Text className="text-3xl font-bold" style={{ color: theme.primary }}>95%</Text>
+              <Text className="text-xs mt-1" style={{ color: theme.textTertiary }}>Great</Text>
+            </TouchableOpacity>
           </View>
-          <View className="bg-white p-4 rounded-xl shadow-sm flex-1 mr-2 items-center">
-            <Ionicons name="checkmark-done-outline" size={32} color="#000" />
-            <Text className="text-gray-600 mt-2">Attendance</Text>
-            <Text className="text-2xl font-bold text-gray-800">95%</Text>
-          </View>
+          
+          <TouchableOpacity 
+            className="p-6 rounded-2xl items-center"
+            style={{ 
+              backgroundColor: theme.surface,
+              borderWidth: 1,
+              borderColor: theme.border,
+              shadowColor: theme.shadow,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4
+            }}
+            activeOpacity={0.8}
+          >
+            <View 
+              className="w-16 h-16 rounded-2xl items-center justify-center mb-4"
+              style={{ backgroundColor: theme.warning + '15', borderWidth: 2, borderColor: theme.warning + '30' }}
+            >
+              <Ionicons name='card' size={32} color={theme.warning} />
+            </View>
+            <Text className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>Pending Fees</Text>
+            <Text className="text-4xl font-bold mb-1" style={{ color: theme.warning }}>$1,200</Text>
+            <Text className="text-xs" style={{ color: theme.textTertiary }}>Due by Dec 15</Text>
+          </TouchableOpacity>
         </View>
-        <View 
-        className="bg-white p-4 rounded-xl shadow-sm mt-4 items-center">
-          <Ionicons name='cash-outline' size={32} color="#000" />
-          <Text className="text-gray-600 mt-2">Pending Fees</Text>
-          <Text className="text-2xl font-bold text-gray-800">$1,200</Text>
-        </View>
-
-      </View>
+      </ScrollView>
 
       {/* Animated Overlay */}
       <Animated.View 
@@ -152,23 +235,28 @@ const Dashboard = () => {
 
       {/* Drawer */}
       <Animated.View 
-        className="absolute top-0 left-0 w-[80%] shadow-2xl bg-[#86C3E5]"
+        className="absolute top-0 left-0 w-[80%] shadow-2xl"
         style={{
+          backgroundColor: theme.primary,
           height: height,
           transform: [{ translateX: slideAnim }],
         }}
       >
-       
-          {/* Close Button */}
-          <View className="absolute top-12 right-4 z-10">
-            <Pressable
-              onPress={toggleDrawer}
-              className="p-2 rounded-full bg-white/30"
-            >
-              <Ionicons name="close" size={24} color="#000" />
-            </Pressable>
-          </View>
+        {/* Close Button */}
+        <View className="absolute top-12 right-4 z-10">
+          <Pressable
+            onPress={toggleDrawer}
+            className="p-2 rounded-full bg-white/30"
+          >
+            <Ionicons name="close" size={24} color={theme.textInverse} />
+          </Pressable>
+        </View>
 
+        <ScrollView 
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Drawer Header */}
           <View className="pt-16 pb-6 px-6">
             {/* Menu Image */}
@@ -181,30 +269,33 @@ const Dashboard = () => {
           </View>
 
           {/* Menu Items */}
-          <View className="flex-1 px-6">
+          <View className="px-6 mb-8">
             {menuItems.map((item, index) => (
               <TouchableOpacity 
                 key={index}
-                className="flex-row items-center py-4 px-4 mb-3 rounded-xl bg-white/90 shadow-sm"
+                className="flex-row items-center py-4 px-4 mb-3 rounded-xl shadow-sm"
+                style={{ backgroundColor: theme.surface }}
                 activeOpacity={0.7}
+                onPress={() => router.push(item.route)}
               >
                 <View 
                   className="w-10 h-10 rounded-lg items-center justify-center mr-4"
-                  style={{ backgroundColor: `${item.color}20` }}
+                  style={{ backgroundColor: theme.primary + '20' }}
                 >
-                  <Ionicons name={item.icon} size={20} color={item.color} />
+                  <Ionicons name={item.icon} size={20} color={theme.primary} />
                 </View>
-                <Text className="text-gray-800 text-lg font-medium">{item.label}</Text>
+                <Text className="text-lg font-medium" style={{ color: theme.text }}>{item.label}</Text>
                 <View className="flex-1" />
-                <Ionicons name="chevron-forward" size={20} color="#6B7280" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
             ))}
           </View>
 
           {/* Drawer Footer */}
-          <View className="pb-24 px-6">
+          <View className="px-6">
             <TouchableOpacity
-              className="flex-row items-center py-4 px-4 rounded-xl bg-white/90 shadow-sm"
+              className="flex-row items-center py-4 px-4 rounded-xl shadow-sm"
+              style={{ backgroundColor: theme.surface }}
               activeOpacity={0.7}
             >
               <View className="w-10 h-10 rounded-lg items-center justify-center mr-4">
@@ -213,9 +304,10 @@ const Dashboard = () => {
                   style={{ width: 20, height: 20 }}
                 />
               </View>
-              <Text className="text-gray-800 text-lg font-medium">Logout</Text>
+              <Text className="text-lg font-medium" style={{ color: theme.text }}>Logout</Text>
             </TouchableOpacity>
           </View>
+        </ScrollView>
       </Animated.View>
     </View>
   )
