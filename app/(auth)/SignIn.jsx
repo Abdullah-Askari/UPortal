@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../context/useAuth';
+import { useTheme } from '../../context/useTheme';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { signIn } = useAuth();
+  const { theme } = useTheme();
 
   // Email/Password login
   const handleLogin = async () => {
@@ -30,7 +32,7 @@ const SignIn = () => {
   };
 
   return (
-    <View className="flex-1 justify-center items-center pt-8" style={{ backgroundColor: '#FFFFFF' }}>
+    <View className="flex-1 justify-center items-center pt-8" style={{ backgroundColor: theme.background }}>
       <Image
         source={require("../../assets/images/signIn.png")}
         style={{ width: 142, height: 142 }}
@@ -39,7 +41,7 @@ const SignIn = () => {
 
       <Text
         style={{
-          color: "#001C27",
+          color: theme.text,
           fontWeight: "bold",
           fontSize: 20,
           textAlign: "center",
@@ -51,7 +53,7 @@ const SignIn = () => {
 
       <Text
         style={{
-          color: "#001C27",
+          color: theme.textSecondary,
           textAlign: "center",
           fontSize: 16,
           lineHeight: 22,
@@ -64,7 +66,7 @@ const SignIn = () => {
       <View style={{ width: "90%", marginBottom: 20 }}>
         <Text
           style={{
-            color: "#001C27",
+            color: theme.text,
             fontWeight: "600",
             fontSize: 16,
             marginBottom: 8,
@@ -75,7 +77,7 @@ const SignIn = () => {
 
         <TextInput
           placeholder="l1s23bsse0037@ucp.edu.pk"
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.textTertiary}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -83,29 +85,29 @@ const SignIn = () => {
           style={{
             paddingVertical: 12,
             fontSize: 16,
-            color: "#001C27",
+            color: theme.text,
             marginBottom: 24,
             borderBottomWidth: 2,
-            borderBottomColor: "#E5E5E5",
+            borderBottomColor: theme.border,
             width: "100%",
           }}
         />
 
-        <Text>Password</Text>
+        <Text style={{ color: theme.text }}>Password</Text>
 
         <TextInput
           placeholder="********"
           secureTextEntry={true}
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.textTertiary}
           value={password}
           onChangeText={setPassword}
           style={{
             paddingVertical: 12,
             fontSize: 16,
-            color: "#001C27",
+            color: theme.text,
             marginBottom: 24,
             borderBottomWidth: 2,
-            borderBottomColor: "#E5E5E5",
+            borderBottomColor: theme.border,
             width: "100%",
           }}
         />
@@ -114,7 +116,7 @@ const SignIn = () => {
           onPress={() => {}}
           className="flex justify-center items-center p-2"
         >
-          <Text style={{ color: "#0F93DF", fontSize: 14, fontWeight: "500" }}>
+          <Text style={{ color: theme.primary, fontSize: 14, fontWeight: "500" }}>
             Forgot Password?
           </Text>
         </TouchableOpacity>
@@ -126,7 +128,7 @@ const SignIn = () => {
             disabled={loading}
             style={{
               borderRadius: 8,
-              backgroundColor: loading ? "#93c5fd" : "#2D9CDB",
+              backgroundColor: loading ? theme.primary + '80' : theme.primary,
               paddingVertical: 12,
               paddingHorizontal: 54,
             }}
@@ -142,7 +144,7 @@ const SignIn = () => {
 
           <Text
             style={{
-              color: "#001C27",
+              color: theme.textSecondary,
               fontSize: 14,
               fontWeight: "500",
               marginTop: 16,
@@ -156,9 +158,9 @@ const SignIn = () => {
             onPress={() => {}}
             style={{
               borderRadius: 8,
-              backgroundColor: "#ffffff",
+              backgroundColor: theme.surface,
               borderWidth: 1,
-              borderColor: "#E5E5E5",
+              borderColor: theme.border,
               paddingVertical: 12,
               paddingHorizontal: 20,
               flexDirection: "row",
@@ -174,7 +176,7 @@ const SignIn = () => {
               contentFit="contain"
             />
             <Text
-              style={{ color: "#001C27", fontWeight: "600", fontSize: 16 }}
+              style={{ color: theme.text, fontWeight: "600", fontSize: 16 }}
             >
               Login with Microsoft
             </Text>
@@ -185,9 +187,9 @@ const SignIn = () => {
             onPress={() => Alert.alert('Coming Soon', 'Google sign-in will be available soon')}
             style={{
               borderRadius: 8,
-              backgroundColor: "#ffffff",
+              backgroundColor: theme.surface,
               borderWidth: 1,
-              borderColor: "#E5E5E5",
+              borderColor: theme.border,
               paddingVertical: 12,
               paddingHorizontal: 20,
               flexDirection: "row",
@@ -199,7 +201,7 @@ const SignIn = () => {
           >
             <Text style={{ fontSize: 20, marginRight: 12 }}>🔍</Text>
             <Text
-              style={{ color: "#001C27", fontWeight: "600", fontSize: 16 }}
+              style={{ color: theme.text, fontWeight: "600", fontSize: 16 }}
             >
               Sign in with Google
             </Text>

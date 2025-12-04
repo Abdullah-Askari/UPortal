@@ -1,4 +1,4 @@
-import { Slot, usePathname } from "expo-router";
+import { Slot } from "expo-router";
 import { View } from 'react-native';
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from '../context/useAuth';
@@ -7,15 +7,11 @@ import '../global.css';
 
 function ThemedSlot() {
   const { theme } = useTheme();
-  const pathname = usePathname();
-  
-  // Don't apply theme background to onboarding and auth screens
-  const isOnboardingOrAuth = pathname.includes('OnBoarding') || pathname.includes('auth');
   
   return (
     <View style={{ 
       flex: 1, 
-      backgroundColor: isOnboardingOrAuth ? 'transparent' : theme.background 
+      backgroundColor: theme.background 
     }}>
       <Slot />
     </View>

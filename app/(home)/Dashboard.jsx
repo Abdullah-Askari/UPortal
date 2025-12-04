@@ -3,7 +3,7 @@ import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, Animated, Dimensions, Pressable, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Animated, BackHandler, Dimensions, Pressable, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
 import { useAuth } from '../../context/useAuth'
 import { useTheme } from '../../context/useTheme'
 import { db } from '../../firebaseConfig'
@@ -27,6 +27,25 @@ const Dashboard = () => {
   });
   
   const [subjects, setSubjects] = useState([]);
+
+  // Prevent back button from going to auth/onboarding screens
+  useEffect(() => {
+    const backAction = () => {
+      if (isDrawerOpen) {
+        toggleDrawer();
+        return true;
+      }
+      // Show exit confirmation or just prevent back
+      Alert.alert('Exit App', 'Are you sure you want to exit?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Exit', onPress: () => BackHandler.exitApp() }
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, [isDrawerOpen]);
 
   // Load data from Firestore
   useEffect(() => {
@@ -62,6 +81,7 @@ const Dashboard = () => {
   // Handle logout
   const handleLogout = async () => {
     const result = await signOut();
+    Alert.alert('Logged Out', 'You have been logged out successfully.');
     if (result.success) {
       router.replace('/(auth)/SignIn');
     }
