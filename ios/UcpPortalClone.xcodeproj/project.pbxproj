@@ -259,14 +259,12 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.abdullah-askari.UcpPortalClone";
-				PRODUCT_NAME = "UcpPortalClone";
+				PRODUCT_BUNDLE_IDENTIFIER = org.name.UcpPortalClone;
+				PRODUCT_NAME = UcpPortalClone;
 				SWIFT_OBJC_BRIDGING_HEADER = "UcpPortalClone/UcpPortalClone-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				CODE_SIGN_ENTITLEMENTS = UcpPortalClone/UcpPortalClone.entitlements;
 			};
 			name = Debug;
 		};
@@ -288,13 +286,11 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.abdullah-askari.UcpPortalClone";
-				PRODUCT_NAME = "UcpPortalClone";
+				PRODUCT_BUNDLE_IDENTIFIER = org.name.UcpPortalClone;
+				PRODUCT_NAME = UcpPortalClone;
 				SWIFT_OBJC_BRIDGING_HEADER = "UcpPortalClone/UcpPortalClone-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				CODE_SIGN_ENTITLEMENTS = UcpPortalClone/UcpPortalClone.entitlements;
 			};
 			name = Release;
 		};

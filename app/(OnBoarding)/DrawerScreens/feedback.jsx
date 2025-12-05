@@ -1,16 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { arrayUnion, doc, setDoc } from 'firebase/firestore';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../../context/useAuth';
 import { useTheme } from '../../../context/useTheme';
-import { db } from '../../../firebaseConfig';
+import { submitFeedback } from '../../../firestore';
 
 const Feedback = () => {
   const router = useRouter();
   const { theme } = useTheme();
-  const { user, userData } = useAuth();
+  const { user, userData, updateUserData } = useAuth();
   const [selectedTab, setSelectedTab] = useState('received');
   const [newFeedback, setNewFeedback] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
@@ -22,7 +21,7 @@ const Feedback = () => {
   const textInputRef = useRef(null);
   
   // Get data from centralized userData
-  const receivedFeedback = userData?.feedback || [];
+  const submittedFeedbackList = userData?.submittedFeedback || [];
   const subjects = userData?.subjects?.map(s => s.name) || [];
 
   useEffect(() => {
@@ -93,19 +92,28 @@ const Feedback = () => {
         color: '#4F46E5'
       };
       
-      await setDoc(doc(db, 'users', user.uid), {
-        submittedFeedback: arrayUnion(feedbackData)
-      }, { merge: true });
+      // Get current submitted feedback and add new one
+      const currentSubmittedFeedback = userData?.submittedFeedback || [];
+      const updatedFeedback = [...currentSubmittedFeedback, feedbackData];
       
-      Alert.alert('Success', 'Your feedback has been submitted successfully!', [
-        { text: 'OK', onPress: () => setSelectedTab('received') }
-      ]);
+      const result = await submitFeedback(user.uid, updatedFeedback);
       
-      // Reset form
-      setNewFeedback('');
-      setSelectedSubject('');
-      setSelectedCategory('');
-      setRating(0);
+      if (result.success) {
+        // Update local state so it appears immediately
+        await updateUserData('submittedFeedback', updatedFeedback);
+        
+        Alert.alert('Success', 'Your feedback has been submitted successfully!', [
+          { text: 'OK', onPress: () => setSelectedTab('received') }
+        ]);
+        
+        // Reset form
+        setNewFeedback('');
+        setSelectedSubject('');
+        setSelectedCategory('');
+        setRating(0);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to submit feedback. Please try again.');
+      }
     } catch (error) {
       console.log('Error submitting feedback:', error);
       Alert.alert('Error', 'Failed to submit feedback. Please try again.');
@@ -177,57 +185,72 @@ const Feedback = () => {
         >
           {selectedTab === 'received' ? (
           <View className="p-6">
-            <Text className="text-lg font-semibold mb-4" style={{ color: theme.text }}>Recent Feedback from Instructors</Text>
+            {/* Submitted Feedback Section - Show First */}
+            <Text className="text-lg font-semibold mb-4" style={{ color: theme.text }}>Your Submitted Feedback</Text>
             
-            <View className="gap-4">
-              {receivedFeedback.map((feedback) => (
-                <View key={feedback.id} className="rounded-xl p-4 shadow-sm" style={{ backgroundColor: theme.surface }}>
-                  <View className="flex-row items-start justify-between mb-3">
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-2">
-                        <View 
-                          className="w-10 h-10 rounded-lg items-center justify-center mr-3"
-                          style={{ backgroundColor: feedback.color + '20' }}
+            {submittedFeedbackList.length > 0 ? (
+              <View className="gap-4">
+                {submittedFeedbackList.map((feedback) => (
+                  <View key={feedback.id} className="rounded-xl p-4 shadow-sm" style={{ backgroundColor: theme.surface }}>
+                    <View className="flex-row items-start justify-between mb-3">
+                      <View className="flex-1">
+                        <View className="flex-row items-center mb-2">
+                          <View 
+                            className="w-10 h-10 rounded-lg items-center justify-center mr-3"
+                            style={{ backgroundColor: feedback.color + '20' }}
+                          >
+                            <Ionicons name="chatbubble-outline" size={20} color={feedback.color} />
+                          </View>
+                          <View className="flex-1">
+                            <Text className="text-lg font-semibold" style={{ color: theme.text }}>{feedback.subject}</Text>
+                            <Text className="text-sm" style={{ color: theme.textSecondary }}>{feedback.category}</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <View className="items-end">
+                        <Text className="text-xs mb-1" style={{ color: theme.textTertiary }}>{feedback.date}</Text>
+                        <View className="flex-row items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Ionicons
+                              key={i}
+                              name={i < feedback.rating ? "star" : "star-outline"}
+                              size={16}
+                              color={i < feedback.rating ? getRatingColor(feedback.rating) : "#D1D5DB"}
+                            />
+                          ))}
+                        </View>
+                      </View>
+                    </View>
+                    
+                    <View className="mb-3">
+                      <View className="flex-row items-center justify-between mb-2">
+                        <View className="px-2 py-1 rounded" style={{ backgroundColor: '#10B981' + '20' }}>
+                          <Text className="text-xs font-medium" style={{ color: '#10B981' }}>{feedback.type}</Text>
+                        </View>
+                        <Text 
+                          className="text-sm font-semibold"
+                          style={{ color: getRatingColor(feedback.rating) }}
                         >
-                          <Ionicons name="person-outline" size={20} color={feedback.color} />
-                        </View>
-                        <View className="flex-1">
-                          <Text className="text-lg font-semibold" style={{ color: theme.text }}>{feedback.subject}</Text>
-                          <Text className="text-sm" style={{ color: theme.textSecondary }}>{feedback.instructor}</Text>
-                        </View>
+                          {getRatingText(feedback.rating)}
+                        </Text>
                       </View>
                     </View>
-                    <View className="items-end">
-                      <Text className="text-xs mb-1" style={{ color: theme.textTertiary }}>{feedback.date}</Text>
-                      <View className="flex-row items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Ionicons
-                            key={i}
-                            name={i < feedback.rating ? "star" : "star-outline"}
-                            size={16}
-                            color={i < feedback.rating ? getRatingColor(feedback.rating) : "#D1D5DB"}
-                          />
-                        ))}
-                      </View>
-                    </View>
+                    
+                    {feedback.message ? (
+                      <Text className="leading-5" style={{ color: theme.textSecondary }}>{feedback.message}</Text>
+                    ) : null}
                   </View>
-                  
-                  <View className="mb-3">
-                    <View className="flex-row items-center justify-between mb-2">
-                      <Text className="text-sm font-medium" style={{ color: theme.textSecondary }}>Type: {feedback.type}</Text>
-                      <Text 
-                        className="text-sm font-semibold"
-                        style={{ color: getRatingColor(feedback.rating) }}
-                      >
-                        {getRatingText(feedback.rating)}
-                      </Text>
-                    </View>
-                  </View>
-                  
-                  <Text className="leading-5" style={{ color: theme.textSecondary }}>{feedback.message}</Text>
-                </View>
-              ))}
-            </View>
+                ))}
+              </View>
+            ) : (
+              <View className="rounded-xl p-6 items-center" style={{ backgroundColor: theme.surface }}>
+                <Ionicons name="chatbubble-ellipses-outline" size={48} color={theme.textSecondary} />
+                <Text className="text-base font-medium mt-3" style={{ color: theme.text }}>No feedback submitted yet</Text>
+                <Text className="text-sm mt-1 text-center" style={{ color: theme.textSecondary }}>
+                  Go to "Give Feedback" tab to submit your course feedback
+                </Text>
+              </View>
+            )}
           </View>
         ) : (
           <View className="p-6">

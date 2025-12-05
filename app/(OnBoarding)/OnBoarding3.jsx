@@ -1,16 +1,24 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
 
 const OnBoarding3 = () => {
   const router = useRouter();
   const { theme } = useTheme();
+  const { completeOnboarding } = useAuth();
+
+  const handleContinue = async () => {
+    await completeOnboarding();
+    router.replace('/(auth)/SignIn');
+  };
+
    return (
      <View className="flex-1" style={{ backgroundColor: theme.background }}>
        <TouchableOpacity 
          activeOpacity={0.7}
-         onPress={() => {router.push('/(auth)/SignIn')}}
+         onPress={handleContinue}
          style={{ position: 'absolute', top: 50, right: 20, zIndex: 10 }}
        >
          <Text style={{ color: theme.text, fontWeight: '600', fontSize: 16 }}>Skip</Text>
@@ -45,7 +53,7 @@ const OnBoarding3 = () => {
        </View>
        <TouchableOpacity
        activeOpacity={0.7}
-      onPress={()=>{router.push('/(auth)/SignIn')}}
+      onPress={handleContinue}
        style={{ position: 'absolute', bottom: 50, right: 20, zIndex: 10,
          borderRadius: 8,
          backgroundColor: theme.primary,
@@ -54,7 +62,7 @@ const OnBoarding3 = () => {
         }}>
          <Text
          style={{ color: 'white' , fontWeight: '600', fontSize: 16 }}>
-            Let’s Go
+            Let's Go
          </Text>
        </TouchableOpacity>
      </View>

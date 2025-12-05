@@ -15,61 +15,86 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Parse command line arguments
+const args = process.argv.slice(2);
+let USER_ID = "8oTrBQtYoXTeKaEJdPr3N0tkvan2"; // Default user ID
+let USER_EMAIL = ""; // Will be set from args or empty
+
+// Parse arguments
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--uid' && args[i + 1]) {
+    USER_ID = args[i + 1];
+    i++;
+  } else if (args[i] === '--email' && args[i + 1]) {
+    USER_EMAIL = args[i + 1];
+    i++;
+  } else if (args[i] === '--help' || args[i] === '-h') {
+    console.log(`
+Usage: node scripts/seedFirestore.js [options]
+
+Options:
+  --uid <userId>    Firebase user UID (required for new users)
+  --email <email>   User's email address
+  --help, -h        Show this help message
+
+Examples:
+  node scripts/seedFirestore.js --uid ABC123XYZ --email student@ucp.edu.pk
+  node scripts/seedFirestore.js --uid ABC123XYZ
+`);
+    process.exit(0);
+  }
+}
+
 // Data to seed
 const subjects = [
-  { icon: "code-slash", name: "Data Structures", time: "Mon, Wed 9:00 AM", code: "CS-201", credits: 3 },
-  { icon: "server", name: "Database Systems", time: "Tue, Thu 11:00 AM", code: "CS-301", credits: 3 },
-  { icon: "globe", name: "Web Development", time: "Mon, Wed 2:00 PM", code: "CS-305", credits: 3 },
-  { icon: "bulb", name: "Artificial Intelligence", time: "Fri 10:00 AM", code: "CS-401", credits: 3 },
+  { icon: "code-slash-outline", name: "Object Oriented Programming", time: "Mon, Wed 9:00 AM", code: "CS-210", credits: 3 },
+  { icon: "git-network-outline", name: "Software Engineering", time: "Mon, Wed 11:00 AM", code: "CS-320", credits: 3 },
+  { icon: "analytics-outline", name: "Data Science", time: "Tue, Thu 9:00 AM", code: "CS-410", credits: 3 },
+  { icon: "cloud-outline", name: "Cloud Computing", time: "Tue, Thu 11:00 AM", code: "CS-420", credits: 3 },
+  { icon: "phone-portrait-outline", name: "Mobile App Development", time: "Mon, Wed 2:00 PM", code: "CS-330", credits: 3 },
+  { icon: "terminal-outline", name: "System Programming", time: "Fri 10:00 AM", code: "CS-310", credits: 3 },
 ];
 
 const notifications = [
-  { id: 1, sender: "Admin Office", message: "Fee submission deadline extended to Dec 20, 2024", time: "2 hours ago", icon: "cash-outline", color: "#EF4444" },
-  { id: 2, sender: "Dr. Ahmed Khan", message: "Data Structures assignment due tomorrow", time: "5 hours ago", icon: "document-text-outline", color: "#4F46E5" },
-  { id: 3, sender: "Exam Cell", message: "Mid-term datesheet has been uploaded", time: "1 day ago", icon: "calendar-outline", color: "#10B981" },
-  { id: 4, sender: "Library", message: "Book return reminder - 2 books overdue", time: "2 days ago", icon: "book-outline", color: "#F59E0B" },
-];
-
-const feedback = [
-  { id: 1, subject: "Data Structures", instructor: "Dr. Ahmed Khan", date: "Nov 28, 2024", type: "Submitted", rating: 5, message: "Excellent teaching methodology and clear explanations", color: "#4F46E5" },
-  { id: 2, subject: "Database Systems", instructor: "Dr. Usman Malik", date: "Nov 25, 2024", type: "Submitted", rating: 4, message: "Good practical sessions, could improve theory lectures", color: "#10B981" },
-  { id: 3, subject: "Web Development", instructor: "Ms. Sara Ali", date: "", type: "Pending", rating: 0, message: "", color: "#F59E0B" },
-  { id: 4, subject: "Artificial Intelligence", instructor: "Dr. Fatima Hassan", date: "", type: "Pending", rating: 0, message: "", color: "#8B5CF6" },
+  { id: 1, sender: "Admin Office", message: "Registration for Spring 2025 opens on Jan 5", time: "1 hour ago", icon: "calendar-outline", color: "#4F46E5" },
+  { id: 2, sender: "Dr. Sarah Ahmed", message: "OOP project submission deadline extended", time: "3 hours ago", icon: "document-text-outline", color: "#10B981" },
+  { id: 3, sender: "Finance Office", message: "Fee challan generated for Spring 2025", time: "1 day ago", icon: "cash-outline", color: "#EF4444" },
+  { id: 4, sender: "IT Department", message: "Portal maintenance scheduled for Sunday", time: "2 days ago", icon: "construct-outline", color: "#F59E0B" },
 ];
 
 const gradebook = {
-  "Fall 2024": [
-    { name: "Data Structures", code: "CS-201", credits: 3, grade: "A", gpa: 4.0, color: "#4F46E5" },
-    { name: "Database Systems", code: "CS-301", credits: 3, grade: "A-", gpa: 3.7, color: "#10B981" },
-    { name: "Web Development", code: "CS-305", credits: 3, grade: "B+", gpa: 3.3, color: "#F59E0B" },
-    { name: "Artificial Intelligence", code: "CS-401", credits: 3, grade: "A", gpa: 4.0, color: "#8B5CF6" },
+  "Fall 2025": [
+    { name: "Object Oriented Programming", code: "CS-210", credits: 3, grade: "A-", gpa: 3.7, color: "#4F46E5" },
+    { name: "Software Engineering", code: "CS-320", credits: 3, grade: "B+", gpa: 3.3, color: "#10B981" },
+    { name: "Data Science", code: "CS-410", credits: 3, grade: "A", gpa: 4.0, color: "#F59E0B" },
+    { name: "Cloud Computing", code: "CS-420", credits: 3, grade: "B", gpa: 3.0, color: "#8B5CF6" },
   ],
-  "Spring 2024": [
-    { name: "Operating Systems", code: "CS-202", credits: 3, grade: "B+", gpa: 3.3, color: "#EF4444" },
-    { name: "Computer Networks", code: "CS-302", credits: 3, grade: "A-", gpa: 3.7, color: "#06B6D4" },
+  "Spring 2025": [
+    { name: "Mobile App Development", code: "CS-330", credits: 3, grade: "A", gpa: 4.0, color: "#EC4899" },
+    { name: "System Programming", code: "CS-310", credits: 3, grade: "A-", gpa: 3.7, color: "#06B6D4" },
   ],
 };
 
 const attendance = {
-  "December 2024": [
-    { subject: "Data Structures", total: 12, present: 11, absent: 1, percentage: 92, color: "#4F46E5" },
-    { subject: "Database Systems", total: 10, present: 8, absent: 2, percentage: 80, color: "#10B981" },
-    { subject: "Web Development", total: 12, present: 10, absent: 2, percentage: 83, color: "#F59E0B" },
-    { subject: "Artificial Intelligence", total: 6, present: 6, absent: 0, percentage: 100, color: "#8B5CF6" },
+  "December 2025": [
+    { subject: "Object Oriented Programming", total: 14, present: 13, absent: 1, percentage: 93, color: "#4F46E5" },
+    { subject: "Software Engineering", total: 12, present: 11, absent: 1, percentage: 92, color: "#10B981" },
+    { subject: "Data Science", total: 10, present: 9, absent: 1, percentage: 90, color: "#F59E0B" },
+    { subject: "Cloud Computing", total: 8, present: 7, absent: 1, percentage: 88, color: "#8B5CF6" },
   ],
-  "November 2024": [
-    { subject: "Data Structures", total: 10, present: 9, absent: 1, percentage: 90, color: "#4F46E5" },
-    { subject: "Database Systems", total: 8, present: 7, absent: 1, percentage: 88, color: "#10B981" },
+  "November 2025": [
+    { subject: "Object Oriented Programming", total: 12, present: 12, absent: 0, percentage: 100, color: "#4F46E5" },
+    { subject: "Software Engineering", total: 10, present: 9, absent: 1, percentage: 90, color: "#10B981" },
   ],
 };
 
 const invoices = {
-  "2024": [
-    { id: "INV-2024-001", semester: "Fall 2024", amountUSD: 450, amountPKR: 125000, status: "Pending", statusColor: "#EF4444", dueDate: "Dec 15, 2024", issueDate: "Nov 1, 2024", description: "Tuition Fee - Fall Semester 2024" },
-    { id: "INV-2024-002", semester: "Spring 2024", amountUSD: 430, amountPKR: 120000, status: "Paid", statusColor: "#10B981", dueDate: "Jun 15, 2024", issueDate: "May 1, 2024", description: "Tuition Fee - Spring Semester 2024" },
+  "2025": [
+    { id: "INV-2025-001", semester: "Fall 2025", amountUSD: 500, amountPKR: 140000, status: "Pending", statusColor: "#EF4444", dueDate: "Dec 20, 2025", issueDate: "Nov 15, 2025", description: "Tuition Fee - Fall Semester 2025" },
+    { id: "INV-2025-002", semester: "Spring 2025", amountUSD: 480, amountPKR: 135000, status: "Paid", statusColor: "#10B981", dueDate: "Jun 20, 2025", issueDate: "May 15, 2025", description: "Tuition Fee - Spring Semester 2025" },
   ],
-  "2023": [
-    { id: "INV-2023-001", semester: "Fall 2023", amountUSD: 400, amountPKR: 110000, status: "Paid", statusColor: "#10B981", dueDate: "Dec 15, 2023", issueDate: "Nov 1, 2023", description: "Tuition Fee - Fall Semester 2023" },
+  "2024": [
+    { id: "INV-2024-001", semester: "Fall 2024", amountUSD: 450, amountPKR: 125000, status: "Paid", statusColor: "#10B981", dueDate: "Dec 15, 2024", issueDate: "Nov 1, 2024", description: "Tuition Fee - Fall Semester 2024" },
   ],
 };
 
@@ -77,65 +102,74 @@ const schedule = [
   {
     day: "Monday",
     classes: [
-      { subject: "Data Structures", time: "9:00 AM - 10:30 AM", room: "Room 301", professor: "Dr. Ahmed Khan", color: "#4F46E5", icon: "code-slash" },
-      { subject: "Web Development", time: "2:00 PM - 3:30 PM", room: "Lab 102", professor: "Ms. Sara Ali", color: "#10B981", icon: "globe" },
+      { subject: "Object Oriented Programming", time: "9:00 AM - 10:30 AM", room: "Room 201", professor: "Dr. Sarah Ahmed", color: "#4F46E5", icon: "code-slash-outline" },
+      { subject: "Software Engineering", time: "11:00 AM - 12:30 PM", room: "Room 305", professor: "Dr. Bilal Khan", color: "#10B981", icon: "git-network-outline" },
+      { subject: "Mobile App Development", time: "2:00 PM - 3:30 PM", room: "Lab 201", professor: "Ms. Ayesha Tariq", color: "#EC4899", icon: "phone-portrait-outline" },
     ],
   },
   {
     day: "Tuesday",
     classes: [
-      { subject: "Database Systems", time: "11:00 AM - 12:30 PM", room: "Room 205", professor: "Dr. Usman Malik", color: "#F59E0B", icon: "server" },
+      { subject: "Data Science", time: "9:00 AM - 10:30 AM", room: "Lab 301", professor: "Dr. Zainab Ali", color: "#F59E0B", icon: "analytics-outline" },
+      { subject: "Cloud Computing", time: "11:00 AM - 12:30 PM", room: "Room 401", professor: "Dr. Farhan Malik", color: "#8B5CF6", icon: "cloud-outline" },
+      { subject: "System Programming", time: "2:00 PM - 3:30 PM", room: "Lab 102", professor: "Dr. Kamran Shah", color: "#06B6D4", icon: "terminal-outline" },
     ],
   },
   {
     day: "Wednesday",
     classes: [
-      { subject: "Data Structures", time: "9:00 AM - 10:30 AM", room: "Room 301", professor: "Dr. Ahmed Khan", color: "#4F46E5", icon: "code-slash" },
-      { subject: "Web Development", time: "2:00 PM - 3:30 PM", room: "Lab 102", professor: "Ms. Sara Ali", color: "#10B981", icon: "globe" },
+      { subject: "Object Oriented Programming", time: "9:00 AM - 10:30 AM", room: "Room 201", professor: "Dr. Sarah Ahmed", color: "#4F46E5", icon: "code-slash-outline" },
+      { subject: "Software Engineering", time: "11:00 AM - 12:30 PM", room: "Room 305", professor: "Dr. Bilal Khan", color: "#10B981", icon: "git-network-outline" },
+      { subject: "Mobile App Development", time: "2:00 PM - 3:30 PM", room: "Lab 201", professor: "Ms. Ayesha Tariq", color: "#EC4899", icon: "phone-portrait-outline" },
     ],
   },
   {
     day: "Thursday",
     classes: [
-      { subject: "Data Structures", time: "9:00 AM - 10:30 AM", room: "Room 301", professor: "Dr. Ahmed Khan", color: "#4F46E5", icon: "code-slash" },
-      { subject: "Database Systems", time: "11:00 AM - 12:30 PM", room: "Room 205", professor: "Dr. Usman Malik", color: "#F59E0B", icon: "server" },
-      { subject: "Web Development", time: "2:00 PM - 3:30 PM", room: "Lab 102", professor: "Ms. Sara Ali", color: "#10B981", icon: "globe" },
-      { subject: "Artificial Intelligence", time: "4:00 PM - 5:30 PM", room: "Room 401", professor: "Dr. Fatima Hassan", color: "#8B5CF6", icon: "bulb" },
+      { subject: "Data Science", time: "9:00 AM - 10:30 AM", room: "Lab 301", professor: "Dr. Zainab Ali", color: "#F59E0B", icon: "analytics-outline" },
+      { subject: "Cloud Computing", time: "11:00 AM - 12:30 PM", room: "Room 401", professor: "Dr. Farhan Malik", color: "#8B5CF6", icon: "cloud-outline" },
+      { subject: "System Programming", time: "2:00 PM - 3:30 PM", room: "Lab 102", professor: "Dr. Kamran Shah", color: "#06B6D4", icon: "terminal-outline" },
     ],
   },
   {
     day: "Friday",
     classes: [
-      { subject: "Artificial Intelligence", time: "10:00 AM - 12:30 PM", room: "Room 401", professor: "Dr. Fatima Hassan", color: "#8B5CF6", icon: "bulb" },
+      { subject: "Object Oriented Programming", time: "10:00 AM - 11:30 AM", room: "Room 201", professor: "Dr. Sarah Ahmed", color: "#4F46E5", icon: "code-slash-outline" },
+      { subject: "Data Science", time: "1:00 PM - 2:30 PM", room: "Lab 301", professor: "Dr. Zainab Ali", color: "#F59E0B", icon: "analytics-outline" },
+      { subject: "Cloud Computing", time: "3:00 PM - 4:30 PM", room: "Room 401", professor: "Dr. Farhan Malik", color: "#8B5CF6", icon: "cloud-outline" },
     ],
   },
 ];
 
 const profile = {
-  name: "Abdullah Askari",
-  email: "syed.m.abdullahaskari@gmail.com",
-  phone: "+92 300 1234567",
-  address: "123 Main Street, Lahore, Pakistan",
-  dob: "January 15, 2002",
-  studentId: "L1F21BSCS0001",
-  department: "Computer Science",
-  semester: "7th",
+  name: "",
+  email: USER_EMAIL,
+  phone: "",
+  address: "",
+  dob: "",
+  studentId: "",
+  department: "",
+  semester: "",
+  profilePicture: ""
 };
 
 const dashboard = {
-  grades: "88%",
-  attendance: "92%",
-  pendingFees: "PKR 125,000",
-  dueDate: "Dec 15, 2024"
+  grades: "85%",
+  attendance: "90%",
+  pendingFees: "PKR 140,000",
+  dueDate: "Dec 20, 2025"
 };
 
 // User document path
-const USER_ID = "yRS0HjxXOSVU6xlSqpMKy25nWx02";
 const userDocPath = `users/${USER_ID}`;
 
 async function seedFirestore() {
   try {
-    console.log("Starting Firestore seeding...\n");
+    console.log("========================================");
+    console.log("Seed Firestore for New User");
+    console.log("========================================\n");
+    console.log(`User ID: ${USER_ID}`);
+    console.log(`Email: ${USER_EMAIL || '(not provided)'}`);
     console.log(`Writing data to: ${userDocPath}\n`);
 
     // Update user document with all the data
@@ -145,17 +179,17 @@ async function seedFirestore() {
       dashboard: dashboard,
       subjects: subjects,
       notifications: notifications,
-      feedback: feedback,
+      submittedFeedback: [],
       gradebook: gradebook,
       attendance: attendance,
       invoices: invoices,
       schedule: schedule,
     }, { merge: true });
     
+    console.log("✓ Profile seeded successfully");
     console.log("✓ Dashboard seeded successfully");
     console.log("✓ Subjects seeded successfully");
     console.log("✓ Notifications seeded successfully");
-    console.log("✓ Feedback seeded successfully");
     console.log("✓ Gradebook seeded successfully");
     console.log("✓ Attendance seeded successfully");
     console.log("✓ Invoices seeded successfully");

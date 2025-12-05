@@ -1,18 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { uploadToCloudinary } from '../../cloudinaryConfig';
 import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
+import { updateProfile } from '../../firestore';
+import KeyboardView from '../components/KeyboardView';
 
 const Profile = () => {
   const router = useRouter();
   const { theme } = useTheme();
-  const { userData, updateUserProfile } = useAuth();
+  const { user, userData, updateUserProfile } = useAuth();
   const [uploading, setUploading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   
   // Get profile data from centralized userData
   const profileData = userData?.profile || {
@@ -21,6 +26,20 @@ const Profile = () => {
     address: '',
     dob: '',
     profilePicture: ''
+  };
+
+  const [editedProfile, setEditedProfile] = useState(profileData);
+
+  // Handle edit toggle
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // Cancel editing
+      setEditedProfile(profileData);
+    } else {
+      // Start editing 
+      setEditedProfile(profileData);
+    }
+    setIsEditing(!isEditing);
   };
 
   // Pick image from gallery
@@ -112,12 +131,44 @@ const Profile = () => {
 
   // Save profile changes
   const handleSaveChanges = async () => {
+    if (!user?.uid) {
+      Alert.alert('Error', 'You must be logged in to save changes');
+      return;
+    }
+    
     try {
-      await updateUserProfile({ profile: profileData });
-      Alert.alert('Success', 'Profile saved successfully!');
+      const result = await updateProfile(user.uid, editedProfile);
+      if (result.success) {
+        // Update local state
+        await updateUserProfile({ profile: editedProfile });
+        setIsEditing(false);
+        Alert.alert('Success', 'Profile saved successfully!');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to save profile');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to save profile');
     }
+  };
+
+  // Handle date picker change
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      const formattedDate = selectedDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      setEditedProfile({ ...editedProfile, dob: formattedDate });
+    }
+  };
+
+  // Parse date string to Date object
+  const parseDate = (dateString) => {
+    if (!dateString) return new Date();
+    const parsed = new Date(dateString);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
   };
 
   return (
@@ -133,8 +184,20 @@ const Profile = () => {
               </View>
             </View>
             {/* Content */}
-            <View className="flex-1 p-6" style={{ backgroundColor: theme.background }}>
+            <KeyboardView contentContainerStyle={{ padding: 24, backgroundColor: theme.background }}>
               
+              {/* Edit Button  */}
+              <View className="flex-row justify-end mb-4">
+                <TouchableOpacity
+                  className="px-4 py-2 rounded-lg flex-row items-center gap-2"
+                  style={{ backgroundColor: isEditing ? theme.textSecondary : theme.primary }}
+                  onPress={handleEditToggle}
+                >
+                  <Ionicons name={isEditing ? "close-outline" : "create-outline"} size={16} color={theme.textInverse} />
+                  <Text className="font-semibold" style={{ color: theme.textInverse }}>{isEditing ? 'Cancel' : 'Edit'}</Text>
+                </TouchableOpacity>
+              </View>
+
               <View className="flex justify-center items-center mb-6">
                 {/* Profile Picture */}
                 <TouchableOpacity 
@@ -172,18 +235,53 @@ const Profile = () => {
               {/* User Information [name]*/}
               <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
                 <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Name</Text>
-                <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.name || 'Not set'}</Text>
+                {isEditing ? (
+                  <TextInput
+                    className="text-lg font-semibold"
+                    style={{ color: theme.text, padding: 0 }}
+                    value={editedProfile.name}
+                    onChangeText={(text) => setEditedProfile({ ...editedProfile, name: text })}
+                    placeholder="Enter your name"
+                    placeholderTextColor={theme.textSecondary}
+                  />
+                ) : (
+                  <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.name || 'Not set'}</Text>
+                )}
               </View>
                   
                   {/* User Information [email]*/}
                   <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
                     <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Email</Text>
-                    <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.email || 'Not set'}</Text>
+                    {isEditing ? (
+                      <TextInput
+                        className="text-lg font-semibold"
+                        style={{ color: theme.text, padding: 0 }}
+                        value={editedProfile.email}
+                        onChangeText={(text) => setEditedProfile({ ...editedProfile, email: text })}
+                        placeholder="Enter your email"
+                        placeholderTextColor={theme.textSecondary}
+                        keyboardType="email-address"
+                      />
+                    ) : (
+                      <Text className="text-lg font-semibold" style={{ color: theme.text }}>{user?.email}</Text>
+                    )}
                   </View>
                   {/* User Information [address]*/}
                   <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
                     <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Address</Text>
-                    <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.address || 'Not set'}</Text>
+                    {isEditing ? (
+                      <TextInput
+                        className="text-lg font-semibold"
+                        style={{ color: theme.text, padding: 0 }}
+                        value={editedProfile.address}
+                        onChangeText={(text) => setEditedProfile({ ...editedProfile, address: text })}
+                        placeholder="Enter your address"
+                        placeholderTextColor={theme.textSecondary}
+                        multiline
+                      />
+                    ) : (
+                      <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.address || 'Not set'}</Text>
+                    )}
                   </View>
 
                   {/* User Information [D.O.B]*/}
@@ -191,23 +289,44 @@ const Profile = () => {
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1">
                         <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>D.O.B</Text>
-                        <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.dob || 'Not set'}</Text>
+                        {isEditing ? (
+                          <Text className="text-lg font-semibold" style={{ color: theme.text }}>
+                            {editedProfile.dob || 'Select date of birth'}
+                          </Text>
+                        ) : (
+                          <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.dob || 'Not set'}</Text>
+                        )}
                       </View>
-                      <Pressable className="ml-4" onPress={() => console.log('Calendar pressed')}>
-                        <Ionicons name="calendar-outline" size={20} color={theme.textSecondary} />
-                      </Pressable>
+                      {isEditing && (
+                        <Pressable className="ml-4 p-2" onPress={() => setShowDatePicker(true)}>
+                          <Ionicons name="calendar-outline" size={24} color={theme.primary} />
+                        </Pressable>
+                      )}
                     </View>
                   </View>
+
+                  {/* Date Picker Modal */}
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={parseDate(editedProfile.dob)}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleDateChange}
+                      maximumDate={new Date()}
+                    />
+                  )}
                   
-                  {/* Save Button */}
-                  <TouchableOpacity 
-                    className="rounded-xl p-4 shadow-sm mt-4 items-center" 
-                    style={{ backgroundColor: theme.primary }}
-                    onPress={handleSaveChanges}
-                  >
-                    <Text className="text-lg font-semibold" style={{ color: theme.textInverse }}>Save Changes</Text>
-                  </TouchableOpacity>
-                </View>
+                  {/* Save Button - Only show when editing */}
+                  {isEditing && (
+                    <TouchableOpacity 
+                      className="rounded-xl p-4 shadow-sm mt-4 items-center" 
+                      style={{ backgroundColor: theme.primary }}
+                      onPress={handleSaveChanges}
+                    >
+                      <Text className="text-lg font-semibold" style={{ color: theme.textInverse }}>Save Changes</Text>
+                    </TouchableOpacity>
+                  )}
+            </KeyboardView>
     </View>
   )
 }

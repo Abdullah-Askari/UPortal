@@ -115,7 +115,7 @@ const SignIn = () => {
         />
 
         <TouchableOpacity
-          onPress={() => {}}
+          onPress={() => {router.push('/(auth)/ForgetPassword')}}
           className="flex justify-center items-center p-2"
         >
           <Text style={{ color: theme.primary, fontSize: 14, fontWeight: "500" }}>

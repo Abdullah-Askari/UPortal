@@ -1,8 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   GoogleAuthProvider,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithCredential,
   signInWithEmailAndPassword
 } from 'firebase/auth';
@@ -16,6 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(null);
   const dataFetchedRef = useRef(false);
 
   // Fetch all user data from Firestore once
@@ -43,7 +46,34 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  // Check if user has seen onboarding
+  const checkOnboardingStatus = async () => {
+    try {
+      const value = await AsyncStorage.getItem('hasSeenOnboarding');
+      return value === 'true';
+    } catch {
+      return false;
+    }
+  };
+
+  // Mark onboarding as complete
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+      setHasSeenOnboarding(true);
+    } catch (error) {
+      console.log('Error saving onboarding status:', error);
+    }
+  };
+
   useEffect(() => {
+    // Check onboarding status on mount
+    const initOnboarding = async () => {
+      const seen = await checkOnboardingStatus();
+      setHasSeenOnboarding(seen);
+    };
+    initOnboarding();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // Get all user data from Firestore once
@@ -180,6 +210,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Forget password
+  const forgetPassword = async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
   // Get screen-specific data from Firestore
   const getScreenData = async (screenName) => {
     if (!user?.uid) return { success: false, error: 'No user logged in' };
@@ -200,6 +239,7 @@ export const AuthProvider = ({ children }) => {
       user,
       userData,
       loading,
+      hasSeenOnboarding,
       signIn,
       signUp,
       signOut,
@@ -207,8 +247,10 @@ export const AuthProvider = ({ children }) => {
       updateUserProfile,
       updateUserData,
       refreshUserData,
+      forgetPassword,
       saveScreenData,
       getScreenData,
+      completeOnboarding,
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
@@ -41,7 +41,7 @@ export const darkTheme = {
   textSecondary: '#D1D5DB',
   textTertiary: '#9CA3AF',
   textInverse: '#1F2937',
-  border: '#374151',
+  border: '#001C27',
   borderSecondary: '#4B5563',
   error: '#F87171',
   warning: '#FBBF24',
