@@ -142,14 +142,14 @@ const schedule = [
 ];
 
 const profile = {
-  name: "",
+  name: "Ali Hassan",
   email: USER_EMAIL,
-  phone: "",
-  address: "",
-  dob: "",
-  studentId: "",
-  department: "",
-  semester: "",
+  phone: "+92 300 1234567",
+  address: "123 Main Street, City, Country",
+  dob: "1995-05-15",
+  studentId: "UCP123456",
+  department: "Computer Science",
+  semester: "8th",
   profilePicture: ""
 };
 

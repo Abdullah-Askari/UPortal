@@ -11,7 +11,7 @@ const Feedback = () => {
   const { theme } = useTheme();
   const { user, userData, updateUserData } = useAuth();
   const [selectedTab, setSelectedTab] = useState('received');
-  const [newFeedback, setNewFeedback] = useState('');
+  const feedbackRef = useRef('');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [rating, setRating] = useState(0);
@@ -85,7 +85,7 @@ const Feedback = () => {
         subject: selectedSubject,
         category: selectedCategory || 'General',
         rating: rating,
-        message: newFeedback.trim(),
+        message: feedbackRef.current.trim(),
         type: 'Submitted',
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         createdAt: new Date().toISOString(),
@@ -107,7 +107,7 @@ const Feedback = () => {
         ]);
         
         // Reset form
-        setNewFeedback('');
+        feedbackRef.current = '';
         setSelectedSubject('');
         setSelectedCategory('');
         setRating(0);
@@ -358,8 +358,8 @@ const Feedback = () => {
                   }}
                   placeholder="Please share specific details about your experience with this course. What did you like? What could be improved? Any suggestions for future students?"
                   placeholderTextColor={theme.textTertiary}
-                  value={newFeedback}
-                  onChangeText={setNewFeedback}
+                  defaultValue={feedbackRef.current}
+                  onChangeText={(text) => feedbackRef.current = text}
                   multiline
                   numberOfLines={isKeyboardVisible ? 4 : 8}
                   textAlignVertical="top"
@@ -376,7 +376,7 @@ const Feedback = () => {
                 {/* Character count badge */}
                 <View className="absolute bottom-4 right-4 px-3 py-1 rounded-full" style={{ backgroundColor: theme.text }}>
                   <Text className="text-xs font-medium" style={{ color: theme.textInverse }}>
-                    {newFeedback.length}/500
+                    {feedbackRef.current.length}/500
                   </Text>
                 </View>
               </View>

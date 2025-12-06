@@ -1,14 +1,14 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
 import KeyboardView from '../components/KeyboardView';
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const emailRef = useRef('');
+  const passwordRef = useRef('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { signIn } = useAuth();
@@ -16,13 +16,13 @@ const SignIn = () => {
 
   // Email/Password login
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!emailRef.current || !passwordRef.current) {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
 
     setLoading(true);
-    const result = await signIn(email, password);
+    const result = await signIn(emailRef.current, passwordRef.current);
     setLoading(false);
 
     if (result.success) {
@@ -80,8 +80,8 @@ const SignIn = () => {
         <TextInput
           placeholder="l1s23bsse0037@ucp.edu.pk"
           placeholderTextColor={theme.textTertiary}
-          value={email}
-          onChangeText={setEmail}
+          defaultValue={emailRef.current}
+          onChangeText={(text) => emailRef.current = text}
           keyboardType="email-address"
           autoCapitalize="none"
           style={{
@@ -101,8 +101,8 @@ const SignIn = () => {
           placeholder="********"
           secureTextEntry={true}
           placeholderTextColor={theme.textTertiary}
-          value={password}
-          onChangeText={setPassword}
+          defaultValue={passwordRef.current}
+          onChangeText={(text) => passwordRef.current = text}
           style={{
             paddingVertical: 12,
             fontSize: 16,

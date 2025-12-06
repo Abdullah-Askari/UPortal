@@ -3,7 +3,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { uploadToCloudinary } from '../../cloudinaryConfig';
 import { useAuth } from '../../context/useAuth';
@@ -28,18 +28,25 @@ const Profile = () => {
     profilePicture: ''
   };
 
-  const [editedProfile, setEditedProfile] = useState(profileData);
+  // Use refs for editable fields
+  const nameRef = useRef(profileData.name);
+  const emailRef = useRef(profileData.email);
+  const addressRef = useRef(profileData.address);
+  const dobRef = useRef(profileData.dob);
 
   // Handle edit toggle
   const handleEditToggle = () => {
     if (isEditing) {
-      // Cancel editing
-      setEditedProfile(profileData);
+      // Cancel editing - reset refs to original values
+      nameRef.current = profileData.name;
+      emailRef.current = profileData.email;
+      addressRef.current = profileData.address;
+      dobRef.current = profileData.dob;
+      setIsEditing(false);
     } else {
       // Start editing 
-      setEditedProfile(profileData);
+      setIsEditing(true);
     }
-    setIsEditing(!isEditing);
   };
 
   // Pick image from gallery
@@ -136,6 +143,14 @@ const Profile = () => {
       return;
     }
     
+    const editedProfile = {
+      name: nameRef.current,
+      email: emailRef.current,
+      address: addressRef.current,
+      dob: dobRef.current,
+      profilePicture: profileData.profilePicture
+    };
+    
     try {
       const result = await updateProfile(user.uid, editedProfile);
       if (result.success) {
@@ -160,7 +175,7 @@ const Profile = () => {
         month: 'long',
         day: 'numeric'
       });
-      setEditedProfile({ ...editedProfile, dob: formattedDate });
+      dobRef.current = formattedDate;
     }
   };
 
@@ -239,8 +254,8 @@ const Profile = () => {
                   <TextInput
                     className="text-lg font-semibold"
                     style={{ color: theme.text, padding: 0 }}
-                    value={editedProfile.name}
-                    onChangeText={(text) => setEditedProfile({ ...editedProfile, name: text })}
+                    defaultValue={nameRef.current}
+                    onChangeText={(text) => nameRef.current = text}
                     placeholder="Enter your name"
                     placeholderTextColor={theme.textSecondary}
                   />
@@ -256,8 +271,8 @@ const Profile = () => {
                       <TextInput
                         className="text-lg font-semibold"
                         style={{ color: theme.text, padding: 0 }}
-                        value={editedProfile.email}
-                        onChangeText={(text) => setEditedProfile({ ...editedProfile, email: text })}
+                        defaultValue={emailRef.current}
+                        onChangeText={(text) => emailRef.current = text}
                         placeholder="Enter your email"
                         placeholderTextColor={theme.textSecondary}
                         keyboardType="email-address"
@@ -273,8 +288,8 @@ const Profile = () => {
                       <TextInput
                         className="text-lg font-semibold"
                         style={{ color: theme.text, padding: 0 }}
-                        value={editedProfile.address}
-                        onChangeText={(text) => setEditedProfile({ ...editedProfile, address: text })}
+                        defaultValue={addressRef.current}
+                        onChangeText={(text) => addressRef.current = text}
                         placeholder="Enter your address"
                         placeholderTextColor={theme.textSecondary}
                         multiline
@@ -291,7 +306,7 @@ const Profile = () => {
                         <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>D.O.B</Text>
                         {isEditing ? (
                           <Text className="text-lg font-semibold" style={{ color: theme.text }}>
-                            {editedProfile.dob || 'Select date of birth'}
+                            {dobRef.current || 'Select date of birth'}
                           </Text>
                         ) : (
                           <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.dob || 'Not set'}</Text>
@@ -308,7 +323,7 @@ const Profile = () => {
                   {/* Date Picker Modal */}
                   {showDatePicker && (
                     <DateTimePicker
-                      value={parseDate(editedProfile.dob)}
+                      value={parseDate(dobRef.current)}
                       mode="date"
                       display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                       onChange={handleDateChange}

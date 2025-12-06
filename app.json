@@ -4,7 +4,7 @@
     "slug": "UcpPortalClone",
     "version": "1.0.0",
     "orientation": "default",
-    "icon": "./assets/images/Logo.png",
+    "icon": "./assets/images/App_Icon.png",
     "scheme": "ucpportalclone",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,7 +15,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
-        "foregroundImage": "./assets/images/Logo.png"
+        "foregroundImage": "./assets/images/App_Icon.png"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.ucp.portal.app",
