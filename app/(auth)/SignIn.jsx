@@ -155,34 +155,6 @@ const SignIn = () => {
             OR
           </Text>
 
-          {/* Microsoft */}
-          <TouchableOpacity
-            onPress={() => {}}
-            style={{
-              borderRadius: 8,
-              backgroundColor: theme.surface,
-              borderWidth: 1,
-              borderColor: theme.border,
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 16,
-              width: "100%",
-            }}
-          >
-            <Image
-              source={require("../../assets/images/Image.png")}
-              style={{ width: 20, height: 20, marginRight: 12 }}
-              contentFit="contain"
-            />
-            <Text
-              style={{ color: theme.text, fontWeight: "600", fontSize: 16 }}
-            >
-              Login with Microsoft
-            </Text>
-          </TouchableOpacity>
 
           {/* Google Sign-In (disabled for now) */}
           <TouchableOpacity
