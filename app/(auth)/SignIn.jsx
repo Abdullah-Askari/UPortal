@@ -1,102 +1,89 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import * as AuthSession from 'expo-auth-session';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../../context/useAuth';
+import { useTheme } from '../../context/useTheme';
+import KeyboardView from '../components/KeyboardView';
+
+// Configure notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 const SignIn = () => {
-  const [userInfo, setUserInfo] = useState(null);
+  const emailRef = useRef('');
+  const passwordRef = useRef('');
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
+  const { signIn, signInWithGoogle } = useAuth();
+  const { theme } = useTheme();
 
-  // YOUR GOOGLE CLIENT ID (Web Client ID)
-  const clientId =
-    "21114518358-emll0l81vpcn6jsfe9unv2lne0k6eemi.apps.googleusercontent.com";
-
-  // Must use proxy in Expo Go
-  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
-
-  // Google OAuth 2.0 Discovery
-  const discovery = {
-    authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-    tokenEndpoint: "https://oauth2.googleapis.com/token",
-    revocationEndpoint: "https://oauth2.googleapis.com/revoke",
-  };
-
-  // Create OAuth Request
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId,
-      redirectUri,
-      scopes: ["openid", "profile", "email"],
-      responseType: "code",
-      usePKCE: true,
-    },
-    discovery
-  );
-
-  // When user returns from Google
+  // Request notification permissions on mount
   useEffect(() => {
-    const handleSignIn = async () => {
-      if (response?.type === "success") {
-        const { code } = response.params;
+    requestNotificationPermissions();
+  }, []);
 
-        // Exchange Code -> Access Token
-        const tokenResponse = await AuthSession.exchangeCodeAsync(
-          {
-            clientId,
-            code,
-            redirectUri,
-            extraParams: {
-              code_verifier: request.codeVerifier,
-            },
-          },
-          discovery
-        );
-
-        fetchUserInfo(tokenResponse.access_token);
-      }
-    };
-
-    handleSignIn();
-  }, [response]);
-
-  // Fetch user info
-  const fetchUserInfo = async (token) => {
+  const requestNotificationPermissions = async () => {
     try {
-      const res = await fetch(
-        "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const user = await res.json();
-      setUserInfo(user);
-
-      Alert.alert("Login Successful", `Welcome ${user.name}`);
-
-      // Navigate to /home after Google login
-      router.replace('/home');
-
-    } catch (err) {
-      Alert.alert("Error", "Failed to fetch Google user info");
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Notification permission not granted');
+      }
+    } catch (error) {
+      console.log('Error requesting notification permissions:', error);
     }
   };
 
-  // Regular email login
-  const handleLogin = () => {
-    Alert.alert("Login", "Regular login functionality will be implemented");
+  // Email/Password login
+  const handleLogin = async () => {
+    if (!emailRef.current || !passwordRef.current) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+
+    setLoading(true);
+    const result = await signIn(emailRef.current, passwordRef.current);
+    setLoading(false);
+
+    if (result.success) {
+      router.replace('/(home)/Dashboard');
+    } else {
+      Alert.alert('Login Failed', result.error);
+    }
+  };
+
+  // Google login
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    const result = await signInWithGoogle();
+    setGoogleLoading(false);
+
+    if (result.success) {
+      router.replace('/(home)/Dashboard');
+    } else {
+      Alert.alert('Google Login Failed', result.error || 'An error occurred during Google login');
+    }
   };
 
   return (
-    <View className="flex justify-center items-center pt-8">
-      <Image
-        source={require("../../assets/images/signIn.png")}
-        style={{ width: 142, height: 142 }}
-        contentFit="contain"
-      />
+    <KeyboardView>
+      <View className="flex-1 justify-center items-center pt-8" style={{ backgroundColor: theme.background }}>
+        <Image
+          source={require("../../assets/images/signIn.png")}
+          style={{ width: 142, height: 142 }}
+          contentFit="contain"
+        />
 
       <Text
         style={{
-          color: "#001C27",
+          color: theme.text,
           fontWeight: "bold",
           fontSize: 20,
           textAlign: "center",
@@ -108,7 +95,7 @@ const SignIn = () => {
 
       <Text
         style={{
-          color: "#001C27",
+          color: theme.textSecondary,
           textAlign: "center",
           fontSize: 16,
           lineHeight: 22,
@@ -121,7 +108,7 @@ const SignIn = () => {
       <View style={{ width: "90%", marginBottom: 20 }}>
         <Text
           style={{
-            color: "#001C27",
+            color: theme.text,
             fontWeight: "600",
             fontSize: 16,
             marginBottom: 8,
@@ -132,40 +119,46 @@ const SignIn = () => {
 
         <TextInput
           placeholder="l1s23bsse0037@ucp.edu.pk"
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.textTertiary}
+          defaultValue={emailRef.current}
+          onChangeText={(text) => emailRef.current = text}
+          keyboardType="email-address"
+          autoCapitalize="none"
           style={{
             paddingVertical: 12,
             fontSize: 16,
-            color: "#001C27",
+            color: theme.text,
             marginBottom: 24,
             borderBottomWidth: 2,
-            borderBottomColor: "#E5E5E5",
+            borderBottomColor: theme.border,
             width: "100%",
           }}
         />
 
-        <Text>Password</Text>
+        <Text style={{ color: theme.text }}>Password</Text>
 
         <TextInput
           placeholder="********"
           secureTextEntry={true}
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.textTertiary}
+          defaultValue={passwordRef.current}
+          onChangeText={(text) => passwordRef.current = text}
           style={{
             paddingVertical: 12,
             fontSize: 16,
-            color: "#001C27",
+            color: theme.text,
             marginBottom: 24,
             borderBottomWidth: 2,
-            borderBottomColor: "#E5E5E5",
+            borderBottomColor: theme.border,
             width: "100%",
           }}
         />
 
         <TouchableOpacity
-          onPress={() => {}}
+          onPress={() => {router.push('/(auth)/ForgetPassword')}}
           className="flex justify-center items-center p-2"
         >
-          <Text style={{ color: "#0F93DF", fontSize: 14, fontWeight: "500" }}>
+          <Text style={{ color: theme.primary, fontSize: 14, fontWeight: "500" }}>
             Forgot Password?
           </Text>
         </TouchableOpacity>
@@ -174,21 +167,26 @@ const SignIn = () => {
           {/* Email login */}
           <TouchableOpacity
             onPress={handleLogin}
+            disabled={loading}
             style={{
               borderRadius: 8,
-              backgroundColor: "#2D9CDB",
+              backgroundColor: loading ? theme.primary + '80' : theme.primary,
               paddingVertical: 12,
               paddingHorizontal: 54,
             }}
           >
-            <Text style={{ color: "white", fontWeight: "600", fontSize: 16 }}>
-              Login
-            </Text>
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={{ color: "white", fontWeight: "600", fontSize: 16 }}>
+                Login
+              </Text>
+            )}
           </TouchableOpacity>
 
           <Text
             style={{
-              color: "#001C27",
+              color: theme.textSecondary,
               fontSize: 14,
               fontWeight: "500",
               marginTop: 16,
@@ -197,62 +195,75 @@ const SignIn = () => {
             OR
           </Text>
 
-          {/* Microsoft */}
-          <TouchableOpacity
-            onPress={() => {}}
-            style={{
-              borderRadius: 8,
-              backgroundColor: "#ffffff",
-              borderWidth: 1,
-              borderColor: "#E5E5E5",
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 16,
-              width: "100%",
-            }}
-          >
-            <Image
-              source={require("../../assets/images/Image.png")}
-              style={{ width: 20, height: 20, marginRight: 12 }}
-              contentFit="contain"
-            />
-            <Text
-              style={{ color: "#001C27", fontWeight: "600", fontSize: 16 }}
-            >
-              Login with Microsoft
-            </Text>
-          </TouchableOpacity>
 
-          {/* Google Sign-In */}
+          {/* Google Sign-In Button */}
           <TouchableOpacity
-            onPress={() => promptAsync()}
+            onPress={handleGoogleLogin}
+            disabled={googleLoading}
             style={{
-              borderRadius: 8,
-              backgroundColor: "#ffffff",
+              borderRadius: 4,
+              backgroundColor: '#FFFFFF',
               borderWidth: 1,
-              borderColor: "#E5E5E5",
-              paddingVertical: 12,
-              paddingHorizontal: 20,
+              borderColor: '#DADCE0',
+              paddingVertical: 11,
+              paddingHorizontal: 24,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
               marginTop: 12,
               width: "100%",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.15,
+              shadowRadius: 1,
+              elevation: 2,
             }}
           >
-            <Text style={{ fontSize: 20, marginRight: 12 }}>🔍</Text>
-            <Text
-              style={{ color: "#001C27", fontWeight: "600", fontSize: 16 }}
-            >
-              Sign in with Google
-            </Text>
+            {googleLoading ? (
+              <ActivityIndicator color="#1F2937" />
+            ) : (
+              <>
+                {/* Google Official Logo  */}
+                <View 
+                  style={{ 
+                    marginRight: 12, 
+                    width: 20, 
+                    height: 20,
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    backgroundColor: '#F8F9FA',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderWidth: 0.5,
+                    borderColor: '#DADCE0'
+                  }}
+                >
+                  <Text style={{ 
+                    fontSize: 12, 
+                    fontWeight: '700',
+                    color: '#3C4043',
+                    letterSpacing: -0.5
+                  }}>
+                    G
+                  </Text>
+                </View>
+                <Text
+                  style={{ 
+                    color: '#3C4043',
+                    fontWeight: "500",
+                    fontSize: 15,
+                    letterSpacing: 0.5
+                  }}
+                >
+                  Login with Google
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </View>
     </View>
+    </KeyboardView>
   );
 };
 

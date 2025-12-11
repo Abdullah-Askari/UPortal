@@ -1,19 +1,34 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDPZMk7_5rpoBDK7k6syWstc4Klc7WFfqw",
-  authDomain: "portalclone-b0cab.firebaseapp.com",
-  projectId: "portalclone-b0cab",
-  storageBucket: "portalclone-b0cab.firebasestorage.app",
-  messagingSenderId: "21114518358",
-  appId: "1:21114518358:web:98f9c73d3aab4cc621f4f7"
+  apiKey: "AIzaSyDD4V0vLy5PRoI6nSsHJEyN0Z3CdW0Gu_Q",
+  authDomain: "ucpportalclone-b264a.firebaseapp.com",
+  projectId: "ucpportalclone-b264a",
+  storageBucket: "ucpportalclone-b264a.firebasestorage.app",
+  messagingSenderId: "339496645684",
+  appId: "1:339496645684:android:916e98b95f1f4d6df54661",
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+// Initialize Firebase (prevent re-initialization)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-export async function loginWithGoogle() {
-  return await signInWithPopup(auth, provider);
+// Initialize Firebase Auth with AsyncStorage persistence
+let auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  });
+} catch (error) {
+  // If already initialized, get the existing instance
+  auth = getAuth(app);
 }
+
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+export { app, auth, db, storage };

@@ -1,14 +1,31 @@
 import { Slot } from "expo-router";
+import { View } from 'react-native';
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AuthProvider } from '../context/useAuth';
+import { ThemeProvider, useTheme } from '../context/useTheme';
 import '../global.css';
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+
+function ThemedSlot() {
+  const { theme } = useTheme();
+  
+  return (
+    <View style={{ 
+      flex: 1, 
+      backgroundColor: theme.background 
+    }}>
+      <Slot />
+    </View>
+  );
+}
 
 export default function RootLayout() {
   return(
     <SafeAreaProvider>
-      <SafeAreaView
-      className="flex-1 bg-[#CEEDFF]">
-        <Slot />
-      </SafeAreaView>
+      <ThemeProvider>
+        <AuthProvider>
+          <ThemedSlot />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   )
 }

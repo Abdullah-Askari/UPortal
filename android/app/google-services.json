@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "339496645684",
+    "project_id": "ucpportalclone-b264a",
+    "storage_bucket": "ucpportalclone-b264a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339496645684:android:85f41fcaa2541cf3f54661",
+        "android_client_info": {
+          "package_name": "com.abdullah.ucpportal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "339496645684-7c1c8vhjhnk09jm64dnthb9u3kqga4dv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abdullah.ucpportal",
+            "certificate_hash": "d6c9c3401a7e6d823fd6fee5d4ed96ab7feef495"
+          }
+        },
+        {
+          "client_id": "339496645684-7egbq5ig5a8mrm208koeihhur0fl6efd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDD4V0vLy5PRoI6nSsHJEyN0Z3CdW0Gu_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "339496645684-7egbq5ig5a8mrm208koeihhur0fl6efd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
