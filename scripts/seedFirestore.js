@@ -17,7 +17,7 @@ const db = getFirestore(app);
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-let USER_ID = "8oTrBQtYoXTeKaEJdPr3N0tkvan2"; // Default user ID
+let USER_ID = "D0KvwixOp4gwPYGmOf1Fs9K9ctb2"; // Default user ID
 let USER_EMAIL = ""; // Will be set from args or empty
 
 // Parse arguments
@@ -47,54 +47,54 @@ Examples:
 
 // Data to seed
 const subjects = [
-  { icon: "code-slash-outline", name: "Object Oriented Programming", time: "Mon, Wed 9:00 AM", code: "CS-210", credits: 3 },
-  { icon: "git-network-outline", name: "Software Engineering", time: "Mon, Wed 11:00 AM", code: "CS-320", credits: 3 },
-  { icon: "analytics-outline", name: "Data Science", time: "Tue, Thu 9:00 AM", code: "CS-410", credits: 3 },
-  { icon: "cloud-outline", name: "Cloud Computing", time: "Tue, Thu 11:00 AM", code: "CS-420", credits: 3 },
-  { icon: "phone-portrait-outline", name: "Mobile App Development", time: "Mon, Wed 2:00 PM", code: "CS-330", credits: 3 },
-  { icon: "terminal-outline", name: "System Programming", time: "Fri 10:00 AM", code: "CS-310", credits: 3 },
+  { icon: "book-outline", name: "Advanced Web Technologies", time: "Tue, Thu 10:00 AM", code: "IT-501", credits: 4 },
+  { icon: "beaker-outline", name: "Machine Learning Fundamentals", time: "Mon, Wed 1:00 PM", code: "AI-302", credits: 3 },
+  { icon: "layers-outline", name: "Database Design", time: "Wed, Fri 9:30 AM", code: "DB-201", credits: 3 },
+  { icon: "settings-outline", name: "Network Security", time: "Tue, Thu 2:00 PM", code: "SEC-401", credits: 3 },
+  { icon: "trending-up-outline", name: "Big Data Analytics", time: "Mon, Wed 3:00 PM", code: "BD-350", credits: 3 },
+  { icon: "code-working-outline", name: "DevOps Engineering", time: "Fri 11:00 AM", code: "DE-401", credits: 3 },
 ];
 
 const notifications = [
-  { id: 1, sender: "Admin Office", message: "Registration for Spring 2025 opens on Jan 5", time: "1 hour ago", icon: "calendar-outline", color: "#4F46E5" },
-  { id: 2, sender: "Dr. Sarah Ahmed", message: "OOP project submission deadline extended", time: "3 hours ago", icon: "document-text-outline", color: "#10B981" },
-  { id: 3, sender: "Finance Office", message: "Fee challan generated for Spring 2025", time: "1 day ago", icon: "cash-outline", color: "#EF4444" },
-  { id: 4, sender: "IT Department", message: "Portal maintenance scheduled for Sunday", time: "2 days ago", icon: "construct-outline", color: "#F59E0B" },
+  { id: 1, sender: "Department Head", message: "New research seminar scheduled for next week", time: "2 hours ago", icon: "megaphone-outline", color: "#8B5CF6" },
+  { id: 2, sender: "Prof. Ahmed Khan", message: "Midterm exam rescheduled to January 15", time: "5 hours ago", icon: "alert-circle-outline", color: "#EC4899" },
+  { id: 3, sender: "Admissions", message: "Your scholarship renewal application received", time: "12 hours ago", icon: "checkmark-circle-outline", color: "#06B6D4" },
+  { id: 4, sender: "Library", message: "Late books reminder - 3 books due today", time: "1 day ago", icon: "library-outline", color: "#D97706" },
 ];
 
 const gradebook = {
   "Fall 2025": [
-    { name: "Object Oriented Programming", code: "CS-210", credits: 3, grade: "A-", gpa: 3.7, color: "#4F46E5" },
-    { name: "Software Engineering", code: "CS-320", credits: 3, grade: "B+", gpa: 3.3, color: "#10B981" },
-    { name: "Data Science", code: "CS-410", credits: 3, grade: "A", gpa: 4.0, color: "#F59E0B" },
-    { name: "Cloud Computing", code: "CS-420", credits: 3, grade: "B", gpa: 3.0, color: "#8B5CF6" },
+    { name: "Advanced Web Technologies", code: "IT-501", credits: 4, grade: "A", gpa: 4.0, color: "#7C3AED" },
+    { name: "Machine Learning Fundamentals", code: "AI-302", credits: 3, grade: "A-", gpa: 3.7, color: "#0891B2" },
+    { name: "Database Design", code: "DB-201", credits: 3, grade: "B+", gpa: 3.3, color: "#EA580C" },
+    { name: "Network Security", code: "SEC-401", credits: 3, grade: "A", gpa: 4.0, color: "#059669" },
   ],
   "Spring 2025": [
-    { name: "Mobile App Development", code: "CS-330", credits: 3, grade: "A", gpa: 4.0, color: "#EC4899" },
-    { name: "System Programming", code: "CS-310", credits: 3, grade: "A-", gpa: 3.7, color: "#06B6D4" },
+    { name: "Big Data Analytics", code: "BD-350", credits: 3, grade: "B", gpa: 3.0, color: "#DC2626" },
+    { name: "DevOps Engineering", code: "DE-401", credits: 3, grade: "A-", gpa: 3.7, color: "#7F1D1D" },
   ],
 };
 
 const attendance = {
   "December 2025": [
-    { subject: "Object Oriented Programming", total: 14, present: 13, absent: 1, percentage: 93, color: "#4F46E5" },
-    { subject: "Software Engineering", total: 12, present: 11, absent: 1, percentage: 92, color: "#10B981" },
-    { subject: "Data Science", total: 10, present: 9, absent: 1, percentage: 90, color: "#F59E0B" },
-    { subject: "Cloud Computing", total: 8, present: 7, absent: 1, percentage: 88, color: "#8B5CF6" },
+    { subject: "Advanced Web Technologies", total: 16, present: 15, absent: 1, percentage: 94, color: "#7C3AED" },
+    { subject: "Machine Learning Fundamentals", total: 13, present: 12, absent: 1, percentage: 92, color: "#0891B2" },
+    { subject: "Database Design", total: 11, present: 10, absent: 1, percentage: 91, color: "#EA580C" },
+    { subject: "Network Security", total: 9, present: 9, absent: 0, percentage: 100, color: "#059669" },
   ],
   "November 2025": [
-    { subject: "Object Oriented Programming", total: 12, present: 12, absent: 0, percentage: 100, color: "#4F46E5" },
-    { subject: "Software Engineering", total: 10, present: 9, absent: 1, percentage: 90, color: "#10B981" },
+    { subject: "Big Data Analytics", total: 14, present: 13, absent: 1, percentage: 93, color: "#DC2626" },
+    { subject: "DevOps Engineering", total: 11, present: 10, absent: 1, percentage: 91, color: "#7F1D1D" },
   ],
 };
 
 const invoices = {
   "2025": [
-    { id: "INV-2025-001", semester: "Fall 2025", amountUSD: 500, amountPKR: 140000, status: "Pending", statusColor: "#EF4444", dueDate: "Dec 20, 2025", issueDate: "Nov 15, 2025", description: "Tuition Fee - Fall Semester 2025" },
-    { id: "INV-2025-002", semester: "Spring 2025", amountUSD: 480, amountPKR: 135000, status: "Paid", statusColor: "#10B981", dueDate: "Jun 20, 2025", issueDate: "May 15, 2025", description: "Tuition Fee - Spring Semester 2025" },
+    { id: "INV-2025-101", semester: "Fall 2025", amountUSD: 520, amountPKR: 156000, status: "Pending", statusColor: "#EF4444", dueDate: "Jan 15, 2026", issueDate: "Dec 1, 2025", description: "Semester Fee with Laboratory Charges" },
+    { id: "INV-2025-102", semester: "Spring 2026", amountUSD: 510, amountPKR: 152000, status: "Paid", statusColor: "#10B981", dueDate: "Jun 15, 2026", issueDate: "May 1, 2026", description: "Tuition Fee - Spring Semester 2026" },
   ],
   "2024": [
-    { id: "INV-2024-001", semester: "Fall 2024", amountUSD: 450, amountPKR: 125000, status: "Paid", statusColor: "#10B981", dueDate: "Dec 15, 2024", issueDate: "Nov 1, 2024", description: "Tuition Fee - Fall Semester 2024" },
+    { id: "INV-2024-101", semester: "Fall 2024", amountUSD: 475, amountPKR: 142000, status: "Paid", statusColor: "#10B981", dueDate: "Dec 10, 2024", issueDate: "Nov 5, 2024", description: "Annual Tuition and Facility Fee" },
   ],
 };
 
@@ -102,62 +102,57 @@ const schedule = [
   {
     day: "Monday",
     classes: [
-      { subject: "Object Oriented Programming", time: "9:00 AM - 10:30 AM", room: "Room 201", professor: "Dr. Sarah Ahmed", color: "#4F46E5", icon: "code-slash-outline" },
-      { subject: "Software Engineering", time: "11:00 AM - 12:30 PM", room: "Room 305", professor: "Dr. Bilal Khan", color: "#10B981", icon: "git-network-outline" },
-      { subject: "Mobile App Development", time: "2:00 PM - 3:30 PM", room: "Lab 201", professor: "Ms. Ayesha Tariq", color: "#EC4899", icon: "phone-portrait-outline" },
+      { subject: "Advanced Web Technologies", time: "10:00 AM - 11:30 AM", room: "Room 401", professor: "Dr. Hassan Raza", color: "#7C3AED", icon: "code-working-outline" },
+      { subject: "Machine Learning Fundamentals", time: "1:00 PM - 2:30 PM", room: "Lab 501", professor: "Dr. Fatima Khan", color: "#0891B2", icon: "beaker-outline" },
     ],
   },
   {
     day: "Tuesday",
     classes: [
-      { subject: "Data Science", time: "9:00 AM - 10:30 AM", room: "Lab 301", professor: "Dr. Zainab Ali", color: "#F59E0B", icon: "analytics-outline" },
-      { subject: "Cloud Computing", time: "11:00 AM - 12:30 PM", room: "Room 401", professor: "Dr. Farhan Malik", color: "#8B5CF6", icon: "cloud-outline" },
-      { subject: "System Programming", time: "2:00 PM - 3:30 PM", room: "Lab 102", professor: "Dr. Kamran Shah", color: "#06B6D4", icon: "terminal-outline" },
+      { subject: "Database Design", time: "9:30 AM - 11:00 AM", room: "Room 301", professor: "Dr. Imran Ali", color: "#EA580C", icon: "layers-outline" },
+      { subject: "Network Security", time: "2:00 PM - 3:30 PM", room: "Lab 301", professor: "Prof. Sana Ahmed", color: "#059669", icon: "shield-checkmark-outline" },
     ],
   },
   {
     day: "Wednesday",
     classes: [
-      { subject: "Object Oriented Programming", time: "9:00 AM - 10:30 AM", room: "Room 201", professor: "Dr. Sarah Ahmed", color: "#4F46E5", icon: "code-slash-outline" },
-      { subject: "Software Engineering", time: "11:00 AM - 12:30 PM", room: "Room 305", professor: "Dr. Bilal Khan", color: "#10B981", icon: "git-network-outline" },
-      { subject: "Mobile App Development", time: "2:00 PM - 3:30 PM", room: "Lab 201", professor: "Ms. Ayesha Tariq", color: "#EC4899", icon: "phone-portrait-outline" },
+      { subject: "Advanced Web Technologies", time: "10:00 AM - 11:30 AM", room: "Room 401", professor: "Dr. Hassan Raza", color: "#7C3AED", icon: "code-working-outline" },
+      { subject: "Big Data Analytics", time: "1:00 PM - 2:30 PM", room: "Lab 401", professor: "Dr. Muhammad Hassan", color: "#DC2626", icon: "trending-up-outline" },
     ],
   },
   {
     day: "Thursday",
     classes: [
-      { subject: "Data Science", time: "9:00 AM - 10:30 AM", room: "Lab 301", professor: "Dr. Zainab Ali", color: "#F59E0B", icon: "analytics-outline" },
-      { subject: "Cloud Computing", time: "11:00 AM - 12:30 PM", room: "Room 401", professor: "Dr. Farhan Malik", color: "#8B5CF6", icon: "cloud-outline" },
-      { subject: "System Programming", time: "2:00 PM - 3:30 PM", room: "Lab 102", professor: "Dr. Kamran Shah", color: "#06B6D4", icon: "terminal-outline" },
+      { subject: "Database Design", time: "9:30 AM - 11:00 AM", room: "Room 301", professor: "Dr. Imran Ali", color: "#EA580C", icon: "layers-outline" },
+      { subject: "Machine Learning Fundamentals", time: "2:00 PM - 3:30 PM", room: "Lab 501", professor: "Dr. Fatima Khan", color: "#0891B2", icon: "beaker-outline" },
     ],
   },
   {
     day: "Friday",
     classes: [
-      { subject: "Object Oriented Programming", time: "10:00 AM - 11:30 AM", room: "Room 201", professor: "Dr. Sarah Ahmed", color: "#4F46E5", icon: "code-slash-outline" },
-      { subject: "Data Science", time: "1:00 PM - 2:30 PM", room: "Lab 301", professor: "Dr. Zainab Ali", color: "#F59E0B", icon: "analytics-outline" },
-      { subject: "Cloud Computing", time: "3:00 PM - 4:30 PM", room: "Room 401", professor: "Dr. Farhan Malik", color: "#8B5CF6", icon: "cloud-outline" },
+      { subject: "Advanced Web Technologies", time: "10:00 AM - 11:30 AM", room: "Room 401", professor: "Dr. Hassan Raza", color: "#7C3AED", icon: "code-working-outline" },
+      { subject: "DevOps Engineering", time: "1:00 PM - 2:30 PM", room: "Lab 201", professor: "Dr. Usman Khan", color: "#7F1D1D", icon: "cog-outline" },
     ],
   },
 ];
 
 const profile = {
-  name: "Ali Hassan",
+  name: "Muhammad Hassan",
   email: USER_EMAIL,
-  phone: "+92 300 1234567",
-  address: "123 Main Street, City, Country",
-  dob: "1995-05-15",
-  studentId: "UCP123456",
-  department: "Computer Science",
-  semester: "8th",
+  phone: "+92 321 7654321",
+  address: "456 University Avenue, Lahore, Pakistan",
+  dob: "1998-03-22",
+  studentId: "UCP567890",
+  department: "Information Technology",
+  semester: "6th",
   profilePicture: ""
 };
 
 const dashboard = {
-  grades: "85%",
-  attendance: "90%",
-  pendingFees: "PKR 140,000",
-  dueDate: "Dec 20, 2025"
+  grades: "88%",
+  attendance: "94%",
+  pendingFees: "PKR 156,000",
+  dueDate: "Jan 15, 2026"
 };
 
 // User document path
