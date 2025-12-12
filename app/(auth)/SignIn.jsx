@@ -224,38 +224,20 @@ const SignIn = () => {
             ) : (
               <>
                 {/* Google Official Logo  */}
-                <View 
-                  style={{ 
-                    marginRight: 12, 
-                    width: 20, 
-                    height: 20,
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    backgroundColor: '#F8F9FA',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderWidth: 0.5,
-                    borderColor: '#DADCE0'
-                  }}
-                >
-                  <Text style={{ 
-                    fontSize: 12, 
-                    fontWeight: '700',
-                    color: '#3C4043',
-                    letterSpacing: -0.5
-                  }}>
-                    G
-                  </Text>
-                </View>
+                <Image
+                  source={require("../../assets/images/google-logo.jpg")}
+                  style={{ width: 20, height: 20, marginRight: 10 }}
+                  contentFit="contain"
+                />
                 <Text
                   style={{ 
                     color: '#3C4043',
-                    fontWeight: "500",
-                    fontSize: 15,
-                    letterSpacing: 0.5
+                    fontWeight: "600",
+                    fontSize: 16,
+                    letterSpacing: 0.3
                   }}
                 >
-                  Login with Google
+                  Sign in with Google
                 </Text>
               </>
             )}
