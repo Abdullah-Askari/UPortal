@@ -12,8 +12,11 @@ export const signInWithGoogle = async () => {
   try {
     await GoogleSignin.hasPlayServices();
 
-    await GoogleSignin.signOut();
-    await GoogleSignin.revokeAccess();
+    try{
+      await GoogleSignin.signOut();
+    } catch (error) {
+      console.log('Google Sign-Out error during sign-in:', error);
+    }
 
     const userInfo = await GoogleSignin.signIn({
       prompt: 'select_account',

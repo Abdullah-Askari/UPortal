@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
-import { Alert, Animated, BackHandler, Dimensions, Pressable, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { Animated, BackHandler, Dimensions, Pressable, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
 import { useAuth } from '../../context/useAuth'
 import { useTheme } from '../../context/useTheme'
+import CustomAlert from '../components/CustomAlert'
 
 const { width, height } = Dimensions.get('window')
 
@@ -15,7 +16,26 @@ const Dashboard = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const slideAnim = useRef(new Animated.Value(-width * 0.8)).current
   const overlayAnim = useRef(new Animated.Value(0)).current
-  
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    type: 'info',
+    showCancel: false,
+    confirmText: 'OK',
+    onConfirm: undefined,
+  });
+
+  const showAlert = (config) => {
+    setAlertConfig(config);
+    setAlertVisible(true);
+  };
+
+  const hideAlert = () => {
+    setAlertVisible(false);
+  };
+
   // Get data from centralized userData
   const dashboardData = userData?.dashboard || {
     grades: '0%',
@@ -23,7 +43,7 @@ const Dashboard = () => {
     pendingFees: 'PKR 0',
     dueDate: 'N/A'
   };
-  
+
   // Get today's classes from schedule
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const today = days[new Date().getDay()];
@@ -38,11 +58,15 @@ const Dashboard = () => {
         toggleDrawer();
         return true;
       }
-      // Show exit confirmation or just prevent back
-      Alert.alert('Exit App', 'Are you sure you want to exit?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Exit', onPress: () => BackHandler.exitApp() }
-      ]);
+
+      showAlert({
+        title: 'Exit App',
+        message: 'Are you sure you want to exit?',
+        type: 'warning',
+        showCancel: true,
+        confirmText: 'Exit',
+        onConfirm: () => BackHandler.exitApp()
+      });
       return true;
     };
 
@@ -52,29 +76,26 @@ const Dashboard = () => {
 
   // Handle logout
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            const result = await signOut();
-            if (result.success) {
-              router.replace('/(auth)/SignIn');
-            }
-          }
+    showAlert({
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      type: 'warning',
+      showCancel: true,
+      confirmText: 'Logout',
+      onConfirm: async () => {
+        const result = await signOut();
+        if (result.success) {
+          router.replace('/(auth)/SignIn');
         }
-      ]
-    );
+        hideAlert();
+      }
+    });
   };
 
   const toggleDrawer = () => {
     const toValue = isDrawerOpen ? -width * 0.8 : 0
     const overlayValue = isDrawerOpen ? 0 : 0.5
-    
+
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue,
@@ -87,25 +108,25 @@ const Dashboard = () => {
         useNativeDriver: true,
       })
     ]).start()
-    
+
     setIsDrawerOpen(!isDrawerOpen)
   }
 
   const menuItems = [
     {
-      icon:'book-outline', label:'Gradebook', color:'#000', route:'/(OnBoarding)/DrawerScreens/gradebook'
+      icon: 'book-outline', label: 'Gradebook', color: '#000', route: '/(OnBoarding)/DrawerScreens/gradebook'
     },
     {
-      icon:'calendar-outline', label:'Attendance', color:'#000', route:'/(OnBoarding)/DrawerScreens/attendance'
+      icon: 'calendar-outline', label: 'Attendance', color: '#000', route: '/(OnBoarding)/DrawerScreens/attendance'
     },
     {
-      icon:'chatbubble-ellipses-outline', label:'Feedback', color:'#000', route:'/(OnBoarding)/DrawerScreens/feedback'
+      icon: 'chatbubble-ellipses-outline', label: 'Feedback', color: '#000', route: '/(OnBoarding)/DrawerScreens/feedback'
     },
     {
-      icon:'document-text-outline', label:'Invoices', color:'#000', route:'/(OnBoarding)/DrawerScreens/invoices'
+      icon: 'document-text-outline', label: 'Invoices', color: '#000', route: '/(OnBoarding)/DrawerScreens/invoices'
     },
     {
-      icon:'settings-outline', label:'Settings', color:'#000', route:'/(OnBoarding)/DrawerScreens/settings'
+      icon: 'settings-outline', label: 'Settings', color: '#000', route: '/(OnBoarding)/DrawerScreens/settings'
     }
   ]
 
@@ -114,15 +135,15 @@ const Dashboard = () => {
       {/* Header */}
       <View className="shadow-md" style={{ backgroundColor: theme.primary, paddingTop: StatusBar.currentHeight }}>
         <View className="flex-row items-center h-20 px-4">
-          <TouchableOpacity 
-            onPress={toggleDrawer} 
+          <TouchableOpacity
+            onPress={toggleDrawer}
             className="mr-4 p-2 rounded-lg"
             style={{ backgroundColor: theme.textInverse + '20' }}
             activeOpacity={0.7}
           >
-            <Ionicons 
-              name="menu-outline" 
-              size={24} 
+            <Ionicons
+              name="menu-outline"
+              size={24}
               color={theme.textInverse}
             />
           </TouchableOpacity>
@@ -131,8 +152,8 @@ const Dashboard = () => {
       </View>
 
       {/* Content */}
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         style={{ backgroundColor: theme.background }}
         contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
@@ -142,10 +163,10 @@ const Dashboard = () => {
         <View className="gap-4 mb-8">
           {todayClasses.length > 0 ? (
             todayClasses.map((classItem, index) => (
-              <View 
+              <View
                 key={index}
                 className="p-5 rounded-2xl flex-row items-center"
-                style={{ 
+                style={{
                   backgroundColor: theme.surface,
                   borderWidth: 1,
                   borderColor: theme.border,
@@ -156,9 +177,9 @@ const Dashboard = () => {
                   elevation: 4
                 }}
               >
-                <View 
+                <View
                   className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
-                  style={{ 
+                  style={{
                     backgroundColor: (classItem.color || theme.primary) + '15',
                     borderWidth: 2,
                     borderColor: (classItem.color || theme.primary) + '30'
@@ -174,9 +195,9 @@ const Dashboard = () => {
               </View>
             ))
           ) : (
-            <View 
+            <View
               className="p-8 rounded-2xl items-center"
-              style={{ 
+              style={{
                 backgroundColor: theme.surface,
                 borderWidth: 1,
                 borderColor: theme.border,
@@ -188,13 +209,13 @@ const Dashboard = () => {
             </View>
           )}
         </View>
-        
+
         {/* Quick Stats */}
         <View className="gap-4">
           <View className="flex-row gap-4">
-            <TouchableOpacity 
+            <TouchableOpacity
               className="p-6 rounded-2xl flex-1 items-center"
-              style={{ 
+              style={{
                 backgroundColor: theme.surface,
                 borderWidth: 1,
                 borderColor: theme.border,
@@ -206,7 +227,7 @@ const Dashboard = () => {
               }}
               activeOpacity={0.8}
             >
-              <View 
+              <View
                 className="w-14 h-14 rounded-2xl items-center justify-center mb-3"
                 style={{ backgroundColor: theme.success + '15', borderWidth: 2, borderColor: theme.success + '30' }}
               >
@@ -216,10 +237,10 @@ const Dashboard = () => {
               <Text className="text-3xl font-bold" style={{ color: theme.success }}>{dashboardData.grades}</Text>
               <Text className="text-xs mt-1" style={{ color: theme.textTertiary }}>Excellent</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               className="p-6 rounded-2xl flex-1 items-center"
-              style={{ 
+              style={{
                 backgroundColor: theme.surface,
                 borderWidth: 1,
                 borderColor: theme.border,
@@ -231,7 +252,7 @@ const Dashboard = () => {
               }}
               activeOpacity={0.8}
             >
-              <View 
+              <View
                 className="w-14 h-14 rounded-2xl items-center justify-center mb-3"
                 style={{ backgroundColor: theme.primary + '15', borderWidth: 2, borderColor: theme.primary + '30' }}
               >
@@ -242,10 +263,10 @@ const Dashboard = () => {
               <Text className="text-xs mt-1" style={{ color: theme.textTertiary }}>Great</Text>
             </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             className="p-6 rounded-2xl items-center"
-            style={{ 
+            style={{
               backgroundColor: theme.surface,
               borderWidth: 1,
               borderColor: theme.border,
@@ -257,7 +278,7 @@ const Dashboard = () => {
             }}
             activeOpacity={0.8}
           >
-            <View 
+            <View
               className="w-16 h-16 rounded-2xl items-center justify-center mb-4"
               style={{ backgroundColor: theme.warning + '15', borderWidth: 2, borderColor: theme.warning + '30' }}
             >
@@ -271,7 +292,7 @@ const Dashboard = () => {
       </ScrollView>
 
       {/* Animated Overlay */}
-      <Animated.View 
+      <Animated.View
         className="absolute inset-0 bg-black"
         style={{
           opacity: overlayAnim,
@@ -280,7 +301,7 @@ const Dashboard = () => {
         }}
         pointerEvents={isDrawerOpen ? 'auto' : 'none'}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           activeOpacity={1}
           className="flex-1"
           onPress={toggleDrawer}
@@ -288,7 +309,7 @@ const Dashboard = () => {
       </Animated.View>
 
       {/* Drawer */}
-      <Animated.View 
+      <Animated.View
         className="absolute top-0 left-0 w-[80%] shadow-2xl"
         style={{
           backgroundColor: theme.primary,
@@ -306,7 +327,7 @@ const Dashboard = () => {
           </Pressable>
         </View>
 
-        <ScrollView 
+        <ScrollView
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
@@ -325,14 +346,14 @@ const Dashboard = () => {
           {/* Menu Items */}
           <View className="px-6 mb-8">
             {menuItems.map((item, index) => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 key={index}
                 className="flex-row items-center py-4 px-4 mb-3 rounded-xl shadow-sm"
                 style={{ backgroundColor: theme.surface }}
                 activeOpacity={0.7}
                 onPress={() => router.push(item.route)}
               >
-                <View 
+                <View
                   className="w-10 h-10 rounded-lg items-center justify-center mr-4"
                   style={{ backgroundColor: theme.primary + '20' }}
                 >
@@ -353,7 +374,7 @@ const Dashboard = () => {
               activeOpacity={0.7}
               onPress={handleLogout}
             >
-              <View 
+              <View
                 className="w-10 h-10 rounded-lg items-center justify-center mr-4"
                 style={{ backgroundColor: theme.error + '20' }}
               >
@@ -366,6 +387,11 @@ const Dashboard = () => {
           </View>
         </ScrollView>
       </Animated.View>
+      <CustomAlert
+        visible={alertVisible}
+        onClose={hideAlert}
+        {...alertConfig}
+      />
     </View>
   )
 }

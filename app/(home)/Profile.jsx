@@ -4,11 +4,13 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { uploadToCloudinary } from '../../cloudinaryConfig';
 import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
 import { updateProfile } from '../../firestore';
+import ActionAlert from '../components/ActionAlert';
+import CustomAlert from '../components/CustomAlert';
 import KeyboardView from '../components/KeyboardView';
 
 const Profile = () => {
@@ -18,7 +20,35 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
+  const [imageAlertVisible, setImageAlertVisible] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
+  const [alertConfig, setAlertConfig] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+    showCancel: false,
+    onConfirm: null
+  });
+
+  const showAlert = ({ title, message, type = 'info', showCancel = false, onConfirm = null }) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+      showCancel,
+      onConfirm
+    });
+  };
+
+  const hideAlert = () => {
+    setAlertConfig(prev => ({ ...prev, visible: false }));
+  };
   // Get profile data from centralized userData
   const profileData = userData?.profile || {
     name: '',
@@ -55,7 +85,7 @@ const Profile = () => {
       // Request permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera roll permissions to change your profile picture.');
+        showAlert({ title: 'Permission Denied', message: 'We need media library permissions to select a photo.', type: 'error' });
         return;
       }
 
@@ -72,7 +102,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Image picker error:', error);
-      Alert.alert('Error', 'Failed to pick image');
+      showAlert({ title: 'Error', message: 'Failed to pick image', type: 'error' });
     }
   };
 
@@ -81,7 +111,7 @@ const Profile = () => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera permissions to take a photo.');
+        showAlert({ title: 'Permission Denied', message: 'We need camera permissions to take a photo.', type: 'error' });
         return;
       }
 
@@ -96,7 +126,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Camera error:', error);
-      Alert.alert('Error', 'Failed to take photo');
+      showAlert({ title: 'Error', message: 'Failed to take photo', type: 'error' });
     }
   };
 
@@ -105,19 +135,19 @@ const Profile = () => {
     setUploading(true);
     try {
       const { url } = await uploadToCloudinary(imageUri);
-      
+
       // Update profile with new picture URL
-      await updateUserProfile({ 
-        profile: { 
-          ...profileData, 
-          profilePicture: url 
-        } 
+      await updateUserProfile({
+        profile: {
+          ...profileData,
+          profilePicture: url
+        }
       });
-      
-      Alert.alert('Success', 'Profile picture updated!');
+
+      showAlert({ title: 'Success', message: 'Profile picture updated successfully!', type: 'success' });
     } catch (error) {
       console.error('Upload error:', error);
-      Alert.alert('Error', error.message || 'Failed to upload image');
+      showAlert({ title: 'Error', message: error.message || 'Failed to upload image', type: 'error' });
     } finally {
       setUploading(false);
     }
@@ -125,24 +155,19 @@ const Profile = () => {
 
   // Show options for changing profile picture
   const handleChangeProfilePicture = () => {
-    Alert.alert(
-      'Change Profile Picture',
-      'Choose an option',
-      [
-        { text: 'Take Photo', onPress: takePhoto },
-        { text: 'Choose from Gallery', onPress: pickImage },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
-  };
-
-  // Save profile changes
+    setImageAlertVisible({
+      visible: true,
+      title: 'Change Profile Picture',
+      message: 'Choose an option to change your profile picture.',
+      type: 'info'
+    });
+  }
   const handleSaveChanges = async () => {
     if (!user?.uid) {
-      Alert.alert('Error', 'You must be logged in to save changes');
+      showAlert({ title: 'Error', message: 'You must be logged in to save changes', type: 'error' });
       return;
     }
-    
+
     const editedProfile = {
       name: nameRef.current,
       email: emailRef.current,
@@ -150,19 +175,19 @@ const Profile = () => {
       dob: dobRef.current,
       profilePicture: profileData.profilePicture
     };
-    
+
     try {
       const result = await updateProfile(user.uid, editedProfile);
       if (result.success) {
         // Update local state
         await updateUserProfile({ profile: editedProfile });
         setIsEditing(false);
-        Alert.alert('Success', 'Profile saved successfully!');
+        showAlert({ title: 'Success', message: 'Profile saved successfully!', type: 'success' });
       } else {
-        Alert.alert('Error', result.error || 'Failed to save profile');
+        showAlert({ title: 'Error', message: result.error || 'Failed to save profile', type: 'error' });
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to save profile');
+      showAlert({ title: 'Error', message: 'Failed to save profile', type: 'error' });
     }
   };
 
@@ -189,159 +214,198 @@ const Profile = () => {
   return (
     <View className="flex-1">
       {/* Header */}
-            <View className="shadow-md" style={{ backgroundColor: theme.primary, paddingTop: StatusBar.currentHeight }}>
-              <View className="flex-row items-center h-20 px-4 gap-4">
-                <Pressable className="p-2"
-                onPress={()=>router.back()}>
-                  <Ionicons name="arrow-back" size={28} color={theme.textInverse} />
-                </Pressable>
-                <Text className="font-semibold text-xl flex-1" style={{ color: theme.textInverse }}>Profile</Text>
-              </View>
+      <View className="shadow-md" style={{ backgroundColor: theme.primary, paddingTop: StatusBar.currentHeight }}>
+        <View className="flex-row items-center h-20 px-4 gap-4">
+          <Pressable className="p-2"
+            onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color={theme.textInverse} />
+          </Pressable>
+          <Text className="font-semibold text-xl flex-1" style={{ color: theme.textInverse }}>Profile</Text>
+        </View>
+      </View>
+      {/* Content */}
+      <KeyboardView contentContainerStyle={{ padding: 24, backgroundColor: theme.background }}>
+
+        {/* Edit Button  */}
+        <View className="flex-row justify-end mb-4">
+          <TouchableOpacity
+            className="px-4 py-2 rounded-lg flex-row items-center gap-2"
+            style={{ backgroundColor: isEditing ? theme.textSecondary : theme.primary }}
+            onPress={handleEditToggle}
+          >
+            <Ionicons name={isEditing ? "close-outline" : "create-outline"} size={16} color={theme.textInverse} />
+            <Text className="font-semibold" style={{ color: theme.textInverse }}>{isEditing ? 'Cancel' : 'Edit'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View className="flex justify-center items-center mb-6">
+          {/* Profile Picture */}
+          <TouchableOpacity
+            onPress={handleChangeProfilePicture}
+            disabled={uploading}
+            activeOpacity={0.8}
+          >
+            <View className="w-40 h-40 rounded-full border-4 overflow-hidden" style={{ borderColor: theme.border }}>
+              {uploading ? (
+                <View className="w-full h-full items-center justify-center" style={{ backgroundColor: theme.surface }}>
+                  <ActivityIndicator size="large" color={theme.primary} />
+                  <Text className="text-xs mt-2" style={{ color: theme.textSecondary }}>Uploading...</Text>
+                </View>
+              ) : (
+                <Image
+                  source={profileData.profilePicture
+                    ? { uri: profileData.profilePicture }
+                    : require('../../assets/images/Illustration-1.png')
+                  }
+                  style={{ width: 160, height: 160 }}
+                  contentFit="cover"
+                />
+              )}
             </View>
-            {/* Content */}
-            <KeyboardView contentContainerStyle={{ padding: 24, backgroundColor: theme.background }}>
-              
-              {/* Edit Button  */}
-              <View className="flex-row justify-end mb-4">
-                <TouchableOpacity
-                  className="px-4 py-2 rounded-lg flex-row items-center gap-2"
-                  style={{ backgroundColor: isEditing ? theme.textSecondary : theme.primary }}
-                  onPress={handleEditToggle}
-                >
-                  <Ionicons name={isEditing ? "close-outline" : "create-outline"} size={16} color={theme.textInverse} />
-                  <Text className="font-semibold" style={{ color: theme.textInverse }}>{isEditing ? 'Cancel' : 'Edit'}</Text>
-                </TouchableOpacity>
-              </View>
+            {/* Camera Icon Overlay */}
+            <View
+              className="absolute bottom-0 right-0 w-10 h-10 rounded-full items-center justify-center"
+              style={{ backgroundColor: theme.primary }}
+            >
+              <Ionicons name="camera" size={20} color={theme.textInverse} />
+            </View>
+          </TouchableOpacity>
+        </View>
 
-              <View className="flex justify-center items-center mb-6">
-                {/* Profile Picture */}
-                <TouchableOpacity 
-                  onPress={handleChangeProfilePicture}
-                  disabled={uploading}
-                  activeOpacity={0.8}
-                >
-                  <View className="w-40 h-40 rounded-full border-4 overflow-hidden" style={{ borderColor: theme.border }}>
-                    {uploading ? (
-                      <View className="w-full h-full items-center justify-center" style={{ backgroundColor: theme.surface }}>
-                        <ActivityIndicator size="large" color={theme.primary} />
-                        <Text className="text-xs mt-2" style={{ color: theme.textSecondary }}>Uploading...</Text>
-                      </View>
-                    ) : (
-                      <Image
-                        source={profileData.profilePicture 
-                          ? { uri: profileData.profilePicture } 
-                          : require('../../assets/images/Illustration-1.png')
-                        }
-                        style={{ width: 160, height: 160 }}
-                        contentFit="cover"
-                      />
-                    )}
-                  </View>
-                  {/* Camera Icon Overlay */}
-                  <View 
-                    className="absolute bottom-0 right-0 w-10 h-10 rounded-full items-center justify-center"
-                    style={{ backgroundColor: theme.primary }}
-                  >
-                    <Ionicons name="camera" size={20} color={theme.textInverse} />
-                  </View>
-                </TouchableOpacity>
-              </View>
-              
-              {/* User Information [name]*/}
-              <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
-                <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Name</Text>
-                {isEditing ? (
-                  <TextInput
-                    className="text-lg font-semibold"
-                    style={{ color: theme.text, padding: 0 }}
-                    defaultValue={nameRef.current}
-                    onChangeText={(text) => nameRef.current = text}
-                    placeholder="Enter your name"
-                    placeholderTextColor={theme.textSecondary}
-                  />
-                ) : (
-                  <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.name || 'Not set'}</Text>
-                )}
-              </View>
-                  
-                  {/* User Information [email]*/}
-                  <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
-                    <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Email</Text>
-                    {isEditing ? (
-                      <TextInput
-                        className="text-lg font-semibold"
-                        style={{ color: theme.text, padding: 0 }}
-                        defaultValue={emailRef.current}
-                        onChangeText={(text) => emailRef.current = text}
-                        placeholder="Enter your email"
-                        placeholderTextColor={theme.textSecondary}
-                        keyboardType="email-address"
-                      />
-                    ) : (
-                      <Text className="text-lg font-semibold" style={{ color: theme.text }}>{user?.email}</Text>
-                    )}
-                  </View>
-                  {/* User Information [address]*/}
-                  <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
-                    <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Address</Text>
-                    {isEditing ? (
-                      <TextInput
-                        className="text-lg font-semibold"
-                        style={{ color: theme.text, padding: 0 }}
-                        defaultValue={addressRef.current}
-                        onChangeText={(text) => addressRef.current = text}
-                        placeholder="Enter your address"
-                        placeholderTextColor={theme.textSecondary}
-                        multiline
-                      />
-                    ) : (
-                      <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.address || 'Not set'}</Text>
-                    )}
-                  </View>
+        {/* User Information [name]*/}
+        <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
+          <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Name</Text>
+          {isEditing ? (
+            <TextInput
+              className="text-lg font-semibold"
+              style={{ color: theme.text, padding: 0 }}
+              defaultValue={nameRef.current}
+              onChangeText={(text) => nameRef.current = text}
+              placeholder="Enter your name"
+              placeholderTextColor={theme.textSecondary}
+            />
+          ) : (
+            <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.name || 'Not set'}</Text>
+          )}
+        </View>
 
-                  {/* User Information [D.O.B]*/}
-                  <View className="rounded-xl p-4 shadow-sm" style={{ backgroundColor: theme.surface }}>
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-1">
-                        <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>D.O.B</Text>
-                        {isEditing ? (
-                          <Text className="text-lg font-semibold" style={{ color: theme.text }}>
-                            {dobRef.current || 'Select date of birth'}
-                          </Text>
-                        ) : (
-                          <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.dob || 'Not set'}</Text>
-                        )}
-                      </View>
-                      {isEditing && (
-                        <Pressable className="ml-4 p-2" onPress={() => setShowDatePicker(true)}>
-                          <Ionicons name="calendar-outline" size={24} color={theme.primary} />
-                        </Pressable>
-                      )}
-                    </View>
-                  </View>
+        {/* User Information [email]*/}
+        <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
+          <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Email</Text>
+          {isEditing ? (
+            <TextInput
+              className="text-lg font-semibold"
+              style={{ color: theme.text, padding: 0 }}
+              defaultValue={emailRef.current}
+              onChangeText={(text) => emailRef.current = text}
+              placeholder="Enter your email"
+              placeholderTextColor={theme.textSecondary}
+              keyboardType="email-address"
+            />
+          ) : (
+            <Text className="text-lg font-semibold" style={{ color: theme.text }}>{user?.email}</Text>
+          )}
+        </View>
+        {/* User Information [address]*/}
+        <View className="rounded-xl p-4 shadow-sm mb-4" style={{ backgroundColor: theme.surface }}>
+          <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>Address</Text>
+          {isEditing ? (
+            <TextInput
+              className="text-lg font-semibold"
+              style={{ color: theme.text, padding: 0 }}
+              defaultValue={addressRef.current}
+              onChangeText={(text) => addressRef.current = text}
+              placeholder="Enter your address"
+              placeholderTextColor={theme.textSecondary}
+              multiline
+            />
+          ) : (
+            <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.address || 'Not set'}</Text>
+          )}
+        </View>
 
-                  {/* Date Picker Modal */}
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={parseDate(dobRef.current)}
-                      mode="date"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                      onChange={handleDateChange}
-                      maximumDate={new Date()}
-                    />
-                  )}
-                  
-                  {/* Save Button - Only show when editing */}
-                  {isEditing && (
-                    <TouchableOpacity 
-                      className="rounded-xl p-4 shadow-sm mt-4 items-center" 
-                      style={{ backgroundColor: theme.primary }}
-                      onPress={handleSaveChanges}
-                    >
-                      <Text className="text-lg font-semibold" style={{ color: theme.textInverse }}>Save Changes</Text>
-                    </TouchableOpacity>
-                  )}
-            </KeyboardView>
+        {/* User Information [D.O.B]*/}
+        <View className="rounded-xl p-4 shadow-sm" style={{ backgroundColor: theme.surface }}>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-sm mb-1" style={{ color: theme.textSecondary }}>D.O.B</Text>
+              {isEditing ? (
+                <Text className="text-lg font-semibold" style={{ color: theme.text }}>
+                  {dobRef.current || 'Select date of birth'}
+                </Text>
+              ) : (
+                <Text className="text-lg font-semibold" style={{ color: theme.text }}>{profileData.dob || 'Not set'}</Text>
+              )}
+            </View>
+            {isEditing && (
+              <Pressable className="ml-4 p-2" onPress={() => setShowDatePicker(true)}>
+                <Ionicons name="calendar-outline" size={24} color={theme.primary} />
+              </Pressable>
+            )}
+          </View>
+        </View>
+
+        {/* Date Picker Modal */}
+        {showDatePicker && (
+          <DateTimePicker
+            value={parseDate(dobRef.current)}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+          />
+        )}
+
+        {/* Save Button - Only show when editing */}
+        {isEditing && (
+          <TouchableOpacity
+            className="rounded-xl p-4 shadow-sm mt-4 items-center"
+            style={{ backgroundColor: theme.primary }}
+            onPress={handleSaveChanges}
+          >
+            <Text className="text-lg font-semibold" style={{ color: theme.textInverse }}>Save Changes</Text>
+          </TouchableOpacity>
+        )}
+      </KeyboardView>
+
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        showCancel={alertConfig.showCancel}
+        onConfirm={alertConfig.onConfirm}
+        onClose={hideAlert}
+      />
+
+      <ActionAlert
+        visible={imageAlertVisible.visible}
+        title={imageAlertVisible.title}
+        message={imageAlertVisible.message}
+        icon="camera"
+        onClose={() => setImageAlertVisible(prev => ({ ...prev, visible: false }))}
+        buttons={[
+          {
+            text: 'Take Photo',
+            onPress: () => {
+              setImageAlertVisible(prev => ({ ...prev, visible: false }));
+              takePhoto();
+            }
+          },
+          {
+            text: 'Choose from Gallery',
+            onPress: () => {
+              setImageAlertVisible(prev => ({ ...prev, visible: false }));
+              pickImage();
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => setImageAlertVisible(prev => ({ ...prev, visible: false }))
+          }
+        ]}
+      />
     </View>
   )
 }

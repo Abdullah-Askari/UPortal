@@ -6,8 +6,7 @@ import { useTheme } from '../context/useTheme';
 export default function Index() {
   const { user, loading, hasSeenOnboarding } = useAuth();
   const { theme } = useTheme();
-
-  // Wait for both auth and onboarding status to load
+  // loading state
   if (loading || hasSeenOnboarding === null) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
@@ -16,16 +15,16 @@ export default function Index() {
     );
   }
 
-  // User is logged in → Dashboard
+  // User is logged in
   if (user) {
     return <Redirect href="/(home)/Dashboard" />
   }
 
-  // First time user → Onboarding
+  // First time user
   if (!hasSeenOnboarding) {
     return <Redirect href="/(OnBoarding)/OnBoarding1" />
   }
 
-  // Returning user not logged in → SignIn
+  // Returning user not logged in
   return <Redirect href="/(auth)/SignIn" />
 }

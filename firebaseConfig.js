@@ -4,7 +4,7 @@ import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/aut
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Your web app's Firebase configuration
+// Web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDD4V0vLy5PRoI6nSsHJEyN0Z3CdW0Gu_Q",
   authDomain: "ucpportalclone-b264a.firebaseapp.com",
@@ -14,7 +14,7 @@ const firebaseConfig = {
   appId: "1:339496645684:android:916e98b95f1f4d6df54661",
 };
 
-// Initialize Firebase (prevent re-initialization)
+// Initialize Firebase app
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 // Initialize Firebase Auth with AsyncStorage persistence
@@ -24,7 +24,6 @@ try {
     persistence: getReactNativePersistence(ReactNativeAsyncStorage)
   });
 } catch (error) {
-  // If already initialized, get the existing instance
   auth = getAuth(app);
 }
 
