@@ -124,18 +124,21 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: res.user };
     } catch (e) {
-      let errorMessage = "Registration failed. Please try again.";
-      if (e.code === 'auth/email-already-in-use') {
-        errorMessage = 'The email address is already in use by another account.';
+      let errorMessage = "Login failed. Please check your credentials.";
+      if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (e.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else if (e.code === 'auth/user-disabled') {
+        errorMessage = 'This account has been disabled. Please contact support.';
       } else if (e.code === 'auth/invalid-email') {
         errorMessage = 'The email address is not valid.';
-      } else if (e.code === 'auth/weak-password') {
-        errorMessage = 'The password is too weak. Please choose a stronger password.';
       }
       return { success: false, error: errorMessage };
     }
   };
 
+  
   /* -------------------- GOOGLE SIGN IN -------------------- */
   const signInWithGoogle = async () => {
     try {
