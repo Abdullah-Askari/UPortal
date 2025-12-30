@@ -138,13 +138,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+
   /* -------------------- GOOGLE SIGN IN -------------------- */
   const signInWithGoogle = async () => {
     try {
       const googleRes = await nativeGoogleSignIn();
       if (!googleRes.success) {
         return { success: false, error: googleRes.error };
+      }
+
+      if (!googleRes.userInfo) {
+        return { success: false, error: 'Google Sign-In failed or was cancelled.' };
       }
 
       const { idToken, accessToken, user } = googleRes.userInfo;
