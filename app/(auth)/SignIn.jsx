@@ -90,7 +90,7 @@ const SignIn = () => {
       setAlertVisible({
         visible: true,
         title: 'Google Sign-In Failed',
-        message: result.error || 'An error occurred during Google Sign-In',
+        message: "An error occurred during Google Sign-In",
         type: 'error',
       });
     }

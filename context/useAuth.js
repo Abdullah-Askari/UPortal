@@ -173,7 +173,11 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: res.user };
 
     } catch (e) {
-      return { success: false, error: e.message };
+      let errorMessage = e.message;
+      if (errorMessage?.includes("idToken") && errorMessage?.includes("null")) {
+        errorMessage = "Sign-In cancelled";
+      }
+      return { success: false, error: errorMessage };
     }
   };
 
