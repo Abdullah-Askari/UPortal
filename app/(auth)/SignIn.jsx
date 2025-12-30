@@ -90,7 +90,7 @@ const SignIn = () => {
       setAlertVisible({
         visible: true,
         title: 'Google Sign-In Failed',
-        message: result.error || 'An error occurred during Google Sign-In',
+        message: "An error occurred during Google Sign-In",
         type: 'error',
       });
     }
@@ -153,7 +153,7 @@ const SignIn = () => {
               fontSize: 16,
               color: theme.text,
               marginBottom: 24,
-              borderBottomWidth: 2,
+              borderBottomWidth: 1,
               borderBottomColor: theme.border,
               width: "100%",
             }}
@@ -173,7 +173,7 @@ const SignIn = () => {
                 paddingRight: 40,
                 fontSize: 16,
                 color: theme.text,
-                borderBottomWidth: 2,
+                borderBottomWidth: 1,
                 borderBottomColor: theme.border,
                 width: "100%",
               }}

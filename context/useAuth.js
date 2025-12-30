@@ -138,13 +138,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+
   /* -------------------- GOOGLE SIGN IN -------------------- */
   const signInWithGoogle = async () => {
     try {
       const googleRes = await nativeGoogleSignIn();
       if (!googleRes.success) {
         return { success: false, error: googleRes.error };
+      }
+
+      if (!googleRes.userInfo) {
+        return { success: false, error: 'Google Sign-In failed or was cancelled.' };
       }
 
       const { idToken, accessToken, user } = googleRes.userInfo;
@@ -169,7 +173,11 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: res.user };
 
     } catch (e) {
-      return { success: false, error: e.message };
+      let errorMessage = e.message;
+      if (errorMessage?.includes("idToken") && errorMessage?.includes("null")) {
+        errorMessage = "Sign-In cancelled";
+      }
+      return { success: false, error: errorMessage };
     }
   };
 

@@ -41,7 +41,7 @@ export const darkTheme = {
   textSecondary: '#D1D5DB',
   textTertiary: '#9CA3AF',
   textInverse: '#1F2937',
-  border: '#001C27',
+  border: '#374151',
   borderSecondary: '#4B5563',
   error: '#F87171',
   warning: '#FBBF24',
