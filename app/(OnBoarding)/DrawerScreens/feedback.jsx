@@ -10,7 +10,7 @@ import CustomAlert from '../../components/CustomAlert';
 const Feedback = () => {
   const router = useRouter();
   const { theme } = useTheme();
-  const { user, userData, updateUserData } = useAuth();
+  const { user, userData, updateUserProfile } = useAuth();
   const [selectedTab, setSelectedTab] = useState('received');
   const feedbackRef = useRef('');
   const [selectedSubject, setSelectedSubject] = useState('');
@@ -123,7 +123,7 @@ const Feedback = () => {
 
       if (result.success) {
         // Update local state so it appears immediately
-        await updateUserData('submittedFeedback', updatedFeedback);
+        updateUserProfile({ submittedFeedback: updatedFeedback });
 
         showAlert('Success', 'Your feedback has been submitted successfully!', 'success', () => setSelectedTab('received'));
 
