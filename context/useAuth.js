@@ -13,6 +13,7 @@ import {
 import {
   doc,
   getDoc,
+  onSnapshot,
   serverTimestamp,
   setDoc
 } from 'firebase/firestore';
@@ -20,7 +21,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useRef,
   useState
 } from 'react';
 
@@ -30,7 +30,7 @@ import {
   signInWithGoogle as nativeGoogleSignIn
 } from '../googleSignInConfig';
 
-const AuthContext = createContext({});
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(null);
 
-  const dataFetchedRef = useRef(false);
+
 
   /* -------------------- GOOGLE INIT -------------------- */
   useEffect(() => {
@@ -57,37 +57,48 @@ export const AuthProvider = ({ children }) => {
   };
 
   /* -------------------- USER DATA -------------------- */
-  const fetchUserData = async (uid) => {
-    const snap = await getDoc(doc(db, 'users', uid));
-    if (snap.exists()) {
-      setUserData(snap.data());
-      return snap.data();
-    }
-    return null;
-  };
-
   /* -------------------- AUTH STATE -------------------- */
+  /* -------------------- AUTH STATE & USER DATA LISTENER -------------------- */
   useEffect(() => {
     (async () => {
       setHasSeenOnboarding(await checkOnboardingStatus());
     })();
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribeFirestore = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser({ uid: firebaseUser.uid, email: firebaseUser.email });
-        if (!dataFetchedRef.current) {
-          await fetchUserData(firebaseUser.uid);
-          dataFetchedRef.current = true;
-        }
+
+        // Subscribe to user changes in real-time
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setUserData(docSnap.data());
+          } else {
+            setUserData(null);
+          }
+        }, (error) => {
+          console.error("Error listening to user data:", error);
+        });
+
       } else {
         setUser(null);
         setUserData(null);
-        dataFetchedRef.current = false;
+        if (unsubscribeFirestore) {
+          unsubscribeFirestore();
+          unsubscribeFirestore = null;
+        }
       }
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeFirestore) {
+        unsubscribeFirestore();
+      }
+    };
   }, []);
 
   /* -------------------- EMAIL SIGN IN -------------------- */
@@ -218,7 +229,7 @@ export const AuthProvider = ({ children }) => {
       await firebaseSignOut(auth);
       setUser(null);
       setUserData(null);
-      dataFetchedRef.current = false;
+
       return { success: true };
     } catch (e) {
       return { success: false, error: e.message };
@@ -255,4 +266,10 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
