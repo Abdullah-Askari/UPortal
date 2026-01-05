@@ -126,6 +126,9 @@ const Dashboard = () => {
       icon: 'document-text-outline', label: 'Invoices', color: '#000', route: '/(OnBoarding)/DrawerScreens/invoices'
     },
     {
+      icon: 'git-pull-request-outline', label: 'Pull Requests', color: '#000', route: '/(OnBoarding)/DrawerScreens/pull-requests'
+    },
+    {
       icon: 'settings-outline', label: 'Settings', color: '#000', route: '/(OnBoarding)/DrawerScreens/settings'
     }
   ]
