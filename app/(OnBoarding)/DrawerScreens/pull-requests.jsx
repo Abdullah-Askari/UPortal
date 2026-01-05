@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, RefreshControl, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../../context/useTheme';
 
 const PullRequests = () => {
@@ -12,15 +12,17 @@ const PullRequests = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   
-  // GitHub repository configuration
-  const GITHUB_OWNER = 'Abdullah-Askari';
-  const GITHUB_REPO = 'UPortal';
+  // GitHub repository configuration - can be moved to a config file or environment variables
+  const config = {
+    owner: 'Abdullah-Askari',
+    repo: 'UPortal'
+  };
   
   const fetchPullRequests = async () => {
     try {
       setError(null);
       const response = await fetch(
-        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/pulls?state=open&sort=updated&direction=desc`,
+        `https://api.github.com/repos/${config.owner}/${config.repo}/pulls?state=open&sort=updated&direction=desc`,
         {
           headers: {
             'Accept': 'application/vnd.github.v3+json',
@@ -50,6 +52,19 @@ const PullRequests = () => {
   const onRefresh = () => {
     setRefreshing(true);
     fetchPullRequests();
+  };
+  
+  const openPullRequest = async (url) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Cannot open this URL');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open pull request');
+    }
   };
   
   const formatDate = (dateString) => {
@@ -158,10 +173,7 @@ const PullRequests = () => {
                   key={pr.id}
                   className="rounded-xl p-4 shadow-sm"
                   style={{ backgroundColor: theme.surface }}
-                  onPress={() => {
-                    // Open PR in browser or show details
-                    console.log('Selected PR:', pr.html_url);
-                  }}
+                  onPress={() => openPullRequest(pr.html_url)}
                   activeOpacity={0.7}
                 >
                   {/* PR Header */}
