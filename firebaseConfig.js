@@ -1,4 +1,5 @@
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -6,12 +7,12 @@ import { getStorage } from 'firebase/storage';
 
 // Web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDD4V0vLy5PRoI6nSsHJEyN0Z3CdW0Gu_Q",
-  authDomain: "ucpportalclone-b264a.firebaseapp.com",
-  projectId: "ucpportalclone-b264a",
-  storageBucket: "ucpportalclone-b264a.firebasestorage.app",
-  messagingSenderId: "339496645684",
-  appId: "1:339496645684:android:916e98b95f1f4d6df54661",
+  apiKey: Constants.expoConfig?.extra?.firebaseApiKey  ,
+  authDomain: Constants.expoConfig?.extra?.firebaseAuthDomain,
+  projectId: Constants.expoConfig?.extra?.firebaseProjectId,
+  storageBucket: Constants.expoConfig?.extra?.firebaseStorageBucket,
+  messagingSenderId: Constants.expoConfig?.extra?.firebaseMessagingSenderId,
+  appId: Constants.expoConfig?.extra?.firebaseAppId,
 };
 
 // Initialize Firebase app

@@ -1,7 +1,8 @@
+import Constants from 'expo-constants';
 
 export const CLOUDINARY_CONFIG = {
-  cloudName: 'dgmjolhbj',
-  uploadPreset: 'dgmjolhbj',
+  cloudName: Constants.expoConfig?.extra?.cloudinaryCloudName,
+  uploadPreset: Constants.expoConfig?.extra?.cloudinaryUploadPreset,
 };
 
 // Upload image to Cloudinary
